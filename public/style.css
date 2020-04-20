@@ -1,0 +1,138 @@
+button, input {
+    -webkit-appearance: none;
+}
+
+body {
+    background-color: #101010;
+    color: white;
+    margin: 0;
+    padding: 0;
+    font-family: 'Helvetica', sans-serif;
+    font-size: 15px;
+}
+
+body:before {
+    content: "";
+    position: absolute;
+    top: 15%;
+    bottom: 15%;
+    left: 15%;
+    right: 15%;
+    z-index: -1000;
+    background-image: url(/img/logo.png);
+    background-size: contain;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    opacity: 0.05;
+}
+
+#app {
+    position: relative;
+    height: 95vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.connection {
+    padding: 10px 15px;
+    border-bottom: 1px solid #888;
+    line-height: 20px;
+    color: #bbb;
+}
+
+.connection:before {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 8px;
+    margin: 0 10px 0 0;
+    background-color: rgb(158, 51, 51);
+}
+
+.connection.on:before {
+    background-color: rgb(19, 114, 73);
+}
+
+.connection .gameid {
+    float: right;
+    line-height: 20px;
+    font-weight: bold;
+}
+
+.controls {
+    padding: 10px 15px;
+    flex-grow: 1;
+}
+
+.controls.centre {
+    text-align: center;
+}
+
+.controls.vcentre {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-row {
+    margin: 20px 0;
+}
+
+.form-row label {
+    display: block;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-row input,
+.form-row button {
+    background-color: #444;
+    color: white;
+    border: 1px solid black;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-row input:focus,
+.form-row button:focus {
+    border: 1px solid orange;
+    outline: none;
+}
+
+.form-row input[type="submit"],
+.form-row button {
+    background-color: orange;
+    border: 1px solid orange;
+    color: black;
+    padding: 8px 20px;
+    text-transform: uppercase;
+}
+
+.form-row input[type="submit"]:disabled,
+.form-row button:disabled {
+    background-color: #444;
+    border: 1px solid #444;
+    color: #777;
+}
+
+.error {
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    bottom: -40px;
+    background-color: #b44;
+    border-radius: 4px;
+    padding: 8px 12px;
+    text-align: center;
+    transition: bottom 0.25s;
+}
+
+.error.visible {
+    bottom: 15px;
+}
