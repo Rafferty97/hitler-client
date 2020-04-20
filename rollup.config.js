@@ -1,6 +1,6 @@
 import typescript from 'rollup-plugin-typescript';
-// import resolve from 'rollup-plugin-node-resolve';
-// import commonJS from 'rollup-plugin-commonjs';
+import resolve from 'rollup-plugin-node-resolve';
+import commonJS from 'rollup-plugin-commonjs';
 
 export default {
   input: './src/index.tsx',
@@ -15,6 +15,8 @@ export default {
   },
   external: ['react', 'react-dom'],
   plugins: [
-    typescript()
+    typescript(),
+    resolve(),
+    commonJS()
   ]
 }

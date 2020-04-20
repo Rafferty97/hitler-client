@@ -11,8 +11,12 @@ export function App() {
     if (msg && msg.trim()[0] == '{') {
       try {
         const json = JSON.parse(msg);
-        if (!json.playerId || !json.name) throw new Error();
-        setState('rejoin:' + json.name);
+        if (typeof json.gameId === 'string' && ['player_join', 'board_join'].indexOf(json.type) != -1) {
+          if (window.confirm(`Rejoin game ${json.gameId}?`)) {
+            window['__JOIN_GAME_MSG'] = json;
+            setState(json.type == 'player_join' ? 'player' : 'board');
+          }
+        }
       }
       catch (err) {}
     }
@@ -26,23 +30,7 @@ export function App() {
     return <BoardApp />;
   }
 
-  const rejoinGame = () => {
-    window['__JOIN_GAME_MSG'] = JSON.parse(localStorage.getItem('join_msg') as string);
-    setState('player');
-  };
-
   return <div className="controls vcentre">
-    {state.substr(0, 7) == 'rejoin:' && <>
-      <div className="form-row">
-        <button onClick={rejoinGame}>
-          Rejoin Game<br/>
-          <span style={{ fontSize: 12 }}>{state.substr(7)}</span>
-        </button>
-      </div>
-      <div className="form-row">
-        <p style={{ margin: 0 }}>&mdash; OR &mdash;</p>
-      </div>
-    </>}
     <div className="form-row">
       <button onClick={() => setState('player')}>New Player</button>
     </div>

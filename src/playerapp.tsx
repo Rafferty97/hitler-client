@@ -3,7 +3,7 @@ import { useWebSocket } from './ws';
 import { Connect } from './connect';
 
 export function PlayerApp() {
-  const [joinGameMsg, setJoinGameMsg] = React.useState<any>(window['__JOIN_GAME_MSG']);
+  const [joinGameMsg, setJoinGameMsg] = React.useState<any>(window['__JOIN_GAME_MSG'] ?? null);
   const [state, setState] = React.useState<any>({
     action: { type: 'connect' }
   });
@@ -32,9 +32,7 @@ export function PlayerApp() {
         throw new Error('Unknown message from server: ' + msg.type);
     }
   }, () => {
-    if (joinGameMsg) {
-      send(joinGameMsg);
-    }
+    if (joinGameMsg) send(joinGameMsg);
   });
 
   const sendConnect = params => send({

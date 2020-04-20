@@ -1,23 +1,35 @@
 import * as React from 'react';
 import { useWebSocket } from './ws';
 import { Connect } from './connect';
+import { PlayBoard, PlayBoardProps } from './play-board';
+
+function deriveBoardState(state: any): PlayBoardProps {
+  return {
+    numLiberalCards: 1,
+    numFascistCards: 1
+  };
+}
 
 export function BoardApp() {
-  const [gameId, setGameId] = React.useState<string>('');
+  const [joinGameMsg, setJoinGameMsg] = React.useState<any>(window['__JOIN_GAME_MSG'] ?? null);
   const [state, setState] = React.useState<any>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   const [connected, send] = useWebSocket(msg => {
     switch (msg.type) {
       case 'game_created':
-        setGameId(msg.gameId);
         send({
           type: 'board_join',
           gameId: msg.gameId
         });
         break;
       case 'game_joined':
-        setGameId(msg.gameId);
+        const joinMsg = {
+          type: 'board_join',
+          gameId: msg.gameId
+        };
+        setJoinGameMsg(joinMsg);
+        localStorage.setItem('join_msg', JSON.stringify(joinMsg));
         break;
       case 'update':
         setState(msg.state);
@@ -30,9 +42,7 @@ export function BoardApp() {
         throw new Error('Unknown message from server: ' + msg.type);
     }
   }, () => {
-    if (gameId != '') {
-      send({ type: 'board_join', gameId });
-    }
+    if (joinGameMsg) send(joinGameMsg);
   });
 
   const sendConnect = params => {
@@ -48,23 +58,23 @@ export function BoardApp() {
 
   let controls;
   if (!state) {
-    controls = <>
+    controls = <div className="controls">
       <Connect player={false} connect={sendConnect} />
       <p>&mdash; OR &mdash;</p>
       <div className="form-row">
         <button onClick={createGame}>Create New Game</button>
       </div>
-    </>;
+    </div>;
   } else {
-    controls = <pre>{JSON.stringify(state)}</pre>;
+    controls = <PlayBoard {...deriveBoardState(state)} />;
   }
 
   return <div>
     <div className={`connection${connected ? ' on' : ''}`}>
       {connected ? 'Connected' : 'Offline'}
-      <div className="gameid">{gameId}</div>
+      <div className="gameid">{joinGameMsg?.gameId}</div>
     </div>
-    <div className="controls">{controls}</div>
+    {controls}
     <div className={`error${error ? ' visible' : ''}`}>{error}</div>
   </div>;
 }

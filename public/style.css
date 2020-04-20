@@ -136,3 +136,41 @@ body:before {
 .error.visible {
     bottom: 15px;
 }
+
+/** PLAY BOARD **/
+
+.play-board {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    perspective: 800px;
+}
+
+.policy-card {
+    position: relative;
+    width: 150px;
+    height: 224px;
+    background-size: 107% auto;
+    background-position: 50% 70%;
+    border-radius: 12px;
+    backface-visibility: hidden;
+    box-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+}
+
+.policy-card.liberal {
+    background-image: url(/img/liberal_article.png);
+}
+
+.policy-card.fascist {
+    background-image: url(/img/fascist_article.png);
+}
+
+.policy-card.backface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #ddd;
+    transform: rotateY(180deg);
+}
