@@ -66,7 +66,7 @@ interface PolicyTrackerProps {
 
 export function PolicyTracker(props: PolicyTrackerProps) {
   const { screen, party, numCards } = props;
-  const scale = screen.width / 1920;
+  const scale = Math.min(screen.width / 1800, screen.height / 800);
   const maxNumCards = party == 'Liberal' ? 5 : 6;
   const width = scale * ((maxNumCards * 170) + 40);
   const height = scale * (224 + 60);

@@ -1852,7 +1852,7 @@ var main = (function (exports, React, reactDom) {
     }
     function PolicyTracker(props) {
         var screen = props.screen, party = props.party, numCards = props.numCards;
-        var scale = screen.width / 1920;
+        var scale = Math.min(screen.width / 1800, screen.height / 800);
         var maxNumCards = party == 'Liberal' ? 5 : 6;
         var width = scale * ((maxNumCards * 170) + 40);
         var height = scale * (224 + 60);
