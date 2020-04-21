@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useWebSocket } from './ws';
 import { Connect } from './connect';
 import { PlayBoard, PlayBoardProps } from './play-board';
+import { getQueryVariable } from './util';
 
 function deriveBoardState(state: any): PlayBoardProps {
   return {
@@ -11,7 +12,14 @@ function deriveBoardState(state: any): PlayBoardProps {
 }
 
 export function BoardApp() {
-  const [joinGameMsg, setJoinGameMsg] = React.useState<any>(window['__JOIN_GAME_MSG'] ?? null);
+  const [joinGameMsg, setJoinGameMsg] = React.useState<any>((() => {
+    const gameId = getQueryVariable('g');
+    if (gameId?.length == 4) {
+      return { type: 'board_join', gameId };
+    } else {
+      return null;
+    }
+  })());
   const [state, setState] = React.useState<any>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -29,7 +37,7 @@ export function BoardApp() {
           gameId: msg.gameId
         };
         setJoinGameMsg(joinMsg);
-        localStorage.setItem('join_msg', JSON.stringify(joinMsg));
+        window.history.pushState('', '', `?m=b&g=${msg.gameId}`);
         break;
       case 'update':
         setState(msg.state);

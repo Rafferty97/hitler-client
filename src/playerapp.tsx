@@ -1,9 +1,18 @@
 import * as React from 'react';
 import { useWebSocket } from './ws';
 import { Connect } from './connect';
+import { getQueryVariable } from './util';
 
 export function PlayerApp() {
-  const [joinGameMsg, setJoinGameMsg] = React.useState<any>(window['__JOIN_GAME_MSG'] ?? null);
+  const [joinGameMsg, setJoinGameMsg] = React.useState<any>((() => {
+    const gameId = getQueryVariable('g');
+    const playerId = getQueryVariable('p');
+    if (gameId?.length == 4 && playerId) {
+      return { type: 'player_join', gameId, playerId };
+    } else {
+      return null;
+    }
+  })());
   const [state, setState] = React.useState<any>({
     action: { type: 'connect' }
   });
@@ -14,12 +23,11 @@ export function PlayerApp() {
       case 'game_joined':
         const joinMsg = {
           type: 'player_join',
-          name: msg.name,
           gameId: msg.gameId,
           playerId: msg.playerId
         };
         setJoinGameMsg(joinMsg);
-        localStorage.setItem('join_msg', JSON.stringify(joinMsg));
+        window.history.pushState('', '', `?m=p&g=${msg.gameId}&p=${msg.playerId}`);
         break;
       case 'update':
         setState(msg.state);

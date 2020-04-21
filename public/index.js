@@ -158,24 +158,59 @@ var main = (function (exports, React, reactDom) {
                 React.createElement("input", { type: "submit", value: "Enter", disabled: disabled })));
     }
 
+    function useWindowSize() {
+        function getSize() {
+            return {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+        }
+        var _a = React.useState(getSize), windowSize = _a[0], setWindowSize = _a[1];
+        React.useEffect(function () {
+            function handleResize() {
+                setWindowSize(getSize());
+            }
+            window.addEventListener('resize', handleResize);
+            return function () { return window.removeEventListener('resize', handleResize); };
+        }, []);
+        return windowSize;
+    }
+    function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split('=');
+            if (decodeURIComponent(pair[0]) == variable) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
+    }
+
     function PlayerApp() {
-        var _a;
-        var _b = React.useState((_a = window['__JOIN_GAME_MSG']) !== null && _a !== void 0 ? _a : null), joinGameMsg = _b[0], setJoinGameMsg = _b[1];
-        var _c = React.useState({
+        var _a = React.useState((function () {
+            var gameId = getQueryVariable('g');
+            var playerId = getQueryVariable('p');
+            if ((gameId === null || gameId === void 0 ? void 0 : gameId.length) == 4 && playerId) {
+                return { type: 'player_join', gameId: gameId, playerId: playerId };
+            }
+            else {
+                return null;
+            }
+        })()), joinGameMsg = _a[0], setJoinGameMsg = _a[1];
+        var _b = React.useState({
             action: { type: 'connect' }
-        }), state = _c[0], setState = _c[1];
-        var _d = React.useState(null), error = _d[0], setError = _d[1];
-        var _e = useWebSocket(function (msg) {
+        }), state = _b[0], setState = _b[1];
+        var _c = React.useState(null), error = _c[0], setError = _c[1];
+        var _d = useWebSocket(function (msg) {
             switch (msg.type) {
                 case 'game_joined':
                     var joinMsg = {
                         type: 'player_join',
-                        name: msg.name,
                         gameId: msg.gameId,
                         playerId: msg.playerId
                     };
                     setJoinGameMsg(joinMsg);
-                    localStorage.setItem('join_msg', JSON.stringify(joinMsg));
+                    window.history.pushState('', '', "?m=p&g=" + msg.gameId + "&p=" + msg.playerId);
                     break;
                 case 'update':
                     setState(msg.state);
@@ -190,7 +225,7 @@ var main = (function (exports, React, reactDom) {
         }, function () {
             if (joinGameMsg)
                 send(joinGameMsg);
-        }), connected = _e[0], send = _e[1];
+        }), connected = _d[0], send = _d[1];
         var sendConnect = function (params) { return send(__assign({ type: 'player_join' }, params)); };
         var sendAction = function (data) { return send({
             type: 'player_action',
@@ -222,24 +257,6 @@ var main = (function (exports, React, reactDom) {
                 React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
             React.createElement("div", { className: "controls " + controlsClass }, controls),
             React.createElement("div", { className: "error" + (error ? ' visible' : '') }, error));
-    }
-
-    function useWindowSize() {
-        function getSize() {
-            return {
-                width: window.innerWidth,
-                height: window.innerHeight
-            };
-        }
-        var _a = React.useState(getSize), windowSize = _a[0], setWindowSize = _a[1];
-        React.useEffect(function () {
-            function handleResize() {
-                setWindowSize(getSize());
-            }
-            window.addEventListener('resize', handleResize);
-            return function () { return window.removeEventListener('resize', handleResize); };
-        }, []);
-        return windowSize;
     }
 
     function _extends() {
@@ -1890,11 +1907,18 @@ var main = (function (exports, React, reactDom) {
         };
     }
     function BoardApp() {
-        var _a;
-        var _b = React.useState((_a = window['__JOIN_GAME_MSG']) !== null && _a !== void 0 ? _a : null), joinGameMsg = _b[0], setJoinGameMsg = _b[1];
-        var _c = React.useState(null), state = _c[0], setState = _c[1];
-        var _d = React.useState(null), error = _d[0], setError = _d[1];
-        var _e = useWebSocket(function (msg) {
+        var _a = React.useState((function () {
+            var gameId = getQueryVariable('g');
+            if ((gameId === null || gameId === void 0 ? void 0 : gameId.length) == 4) {
+                return { type: 'board_join', gameId: gameId };
+            }
+            else {
+                return null;
+            }
+        })()), joinGameMsg = _a[0], setJoinGameMsg = _a[1];
+        var _b = React.useState(null), state = _b[0], setState = _b[1];
+        var _c = React.useState(null), error = _c[0], setError = _c[1];
+        var _d = useWebSocket(function (msg) {
             switch (msg.type) {
                 case 'game_created':
                     send({
@@ -1908,7 +1932,7 @@ var main = (function (exports, React, reactDom) {
                         gameId: msg.gameId
                     };
                     setJoinGameMsg(joinMsg);
-                    localStorage.setItem('join_msg', JSON.stringify(joinMsg));
+                    window.history.pushState('', '', "?m=b&g=" + msg.gameId);
                     break;
                 case 'update':
                     setState(msg.state);
@@ -1923,7 +1947,7 @@ var main = (function (exports, React, reactDom) {
         }, function () {
             if (joinGameMsg)
                 send(joinGameMsg);
-        }), connected = _e[0], send = _e[1];
+        }), connected = _d[0], send = _d[1];
         var sendConnect = function (params) {
             send(__assign({ type: 'board_join' }, params));
         };
@@ -1950,35 +1974,31 @@ var main = (function (exports, React, reactDom) {
     }
 
     function App() {
-        var _a = React.useState(''), state = _a[0], setState = _a[1];
-        React.useEffect(function () {
-            var msg = localStorage.getItem('join_msg');
-            if (msg && msg.trim()[0] == '{') {
-                try {
-                    var json = JSON.parse(msg);
-                    if (typeof json.gameId === 'string' && ['player_join', 'board_join'].indexOf(json.type) != -1) {
-                        if (window.confirm("Rejoin game " + json.gameId + "?")) {
-                            window['__JOIN_GAME_MSG'] = json;
-                            setState(json.type == 'player_join' ? 'player' : 'board');
-                        }
-                    }
-                }
-                catch (err) { }
-            }
-        }, []);
+        var _a = React.useState((function () {
+            var state = getQueryVariable('m');
+            if (state == 'p')
+                return 'player';
+            if (state == 'b')
+                return 'board';
+            return '';
+        })()), state = _a[0], setState = _a[1];
         if (state == 'player') {
             return React.createElement(PlayerApp, null);
         }
         if (state == 'board') {
             return React.createElement(BoardApp, null);
         }
+        var setMode = function (mode) {
+            window.history.pushState('', '', '?m=' + mode.substr(0, 1));
+            setState(mode);
+        };
         return React.createElement("div", { className: "controls vcentre" },
             React.createElement("div", { className: "form-row" },
-                React.createElement("button", { onClick: function () { return setState('player'); } }, "New Player")),
+                React.createElement("button", { onClick: function () { return setMode('player'); } }, "New Player")),
             React.createElement("div", { className: "form-row" },
                 React.createElement("p", { style: { margin: 0 } }, "\u2014 OR \u2014")),
             React.createElement("div", { className: "form-row" },
-                React.createElement("button", { onClick: function () { return setState('board'); } }, "Board Screen")));
+                React.createElement("button", { onClick: function () { return setMode('board'); } }, "Board Screen")));
     }
     reactDom.render(React.createElement(App, null), document.querySelector('#app'));
 
