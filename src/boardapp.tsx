@@ -4,13 +4,6 @@ import { Connect } from './connect';
 import { PlayBoard, PlayBoardProps } from './play-board';
 import { getQueryVariable } from './util';
 
-function deriveBoardState(state: any): PlayBoardProps {
-  return {
-    numLiberalCards: 1,
-    numFascistCards: 1
-  };
-}
-
 export function BoardApp() {
   const [joinGameMsg, setJoinGameMsg] = React.useState<any>((() => {
     const gameId = getQueryVariable('g');
@@ -74,7 +67,7 @@ export function BoardApp() {
       </div>
     </div>;
   } else {
-    controls = <PlayBoard {...deriveBoardState(state)} />;
+    controls = <PlayBoard {...state} />;
   }
 
   return <div>

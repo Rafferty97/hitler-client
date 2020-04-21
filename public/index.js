@@ -1321,6 +1321,307 @@ var main = (function (exports, React, reactDom) {
       return isFn ? [result[0], set, pause] : result;
     };
 
+    /** API
+     * const transitions = useTransition(items, itemKeys, { ... })
+     * const [transitions, update] = useTransition(items, itemKeys, () => ({ ... }))
+     */
+
+    let guid = 0;
+    const ENTER = 'enter';
+    const LEAVE = 'leave';
+    const UPDATE = 'update';
+
+    const mapKeys = (items, keys) => (typeof keys === 'function' ? items.map(keys) : toArray(keys)).map(String);
+
+    const get = props => {
+      let items = props.items,
+          _props$keys = props.keys,
+          keys = _props$keys === void 0 ? item => item : _props$keys,
+          rest = _objectWithoutPropertiesLoose(props, ["items", "keys"]);
+
+      items = toArray(items !== void 0 ? items : null);
+      return _extends({
+        items,
+        keys: mapKeys(items, keys)
+      }, rest);
+    };
+
+    function useTransition(input, keyTransform, config) {
+      const props = _extends({
+        items: input,
+        keys: keyTransform || (i => i)
+      }, config);
+
+      const _get = get(props),
+            _get$lazy = _get.lazy,
+            lazy = _get$lazy === void 0 ? false : _get$lazy,
+            _get$unique = _get.unique,
+            _get$reset = _get.reset,
+            reset = _get$reset === void 0 ? false : _get$reset,
+            enter = _get.enter,
+            leave = _get.leave,
+            update = _get.update,
+            onDestroyed = _get.onDestroyed,
+            keys = _get.keys,
+            items = _get.items,
+            onFrame = _get.onFrame,
+            _onRest = _get.onRest,
+            onStart = _get.onStart,
+            ref = _get.ref,
+            extra = _objectWithoutPropertiesLoose(_get, ["lazy", "unique", "reset", "enter", "leave", "update", "onDestroyed", "keys", "items", "onFrame", "onRest", "onStart", "ref"]);
+
+      const forceUpdate = useForceUpdate();
+      const mounted = React.useRef(false);
+      const state = React.useRef({
+        mounted: false,
+        first: true,
+        deleted: [],
+        current: {},
+        transitions: [],
+        prevProps: {},
+        paused: !!props.ref,
+        instances: !mounted.current && new Map(),
+        forceUpdate
+      });
+      React.useImperativeHandle(props.ref, () => ({
+        start: () => Promise.all(Array.from(state.current.instances).map((_ref) => {
+          let c = _ref[1];
+          return new Promise(r => c.start(r));
+        })),
+        stop: finished => Array.from(state.current.instances).forEach((_ref2) => {
+          let c = _ref2[1];
+          return c.stop(finished);
+        }),
+
+        get controllers() {
+          return Array.from(state.current.instances).map((_ref3) => {
+            let c = _ref3[1];
+            return c;
+          });
+        }
+
+      })); // Update state
+
+      state.current = diffItems(state.current, props);
+
+      if (state.current.changed) {
+        // Update state
+        state.current.transitions.forEach(transition => {
+          const slot = transition.slot,
+                from = transition.from,
+                to = transition.to,
+                config = transition.config,
+                trail = transition.trail,
+                key = transition.key,
+                item = transition.item;
+          if (!state.current.instances.has(key)) state.current.instances.set(key, new Controller()); // update the map object
+
+          const ctrl = state.current.instances.get(key);
+
+          const newProps = _extends({}, extra, {
+            to,
+            from,
+            config,
+            ref,
+            onRest: values => {
+              if (state.current.mounted) {
+                if (transition.destroyed) {
+                  // If no ref is given delete destroyed items immediately
+                  if (!ref && !lazy) cleanUp(state, key);
+                  if (onDestroyed) onDestroyed(item);
+                } // A transition comes to rest once all its springs conclude
+
+
+                const curInstances = Array.from(state.current.instances);
+                const active = curInstances.some((_ref4) => {
+                  let c = _ref4[1];
+                  return !c.idle;
+                });
+                if (!active && (ref || lazy) && state.current.deleted.length > 0) cleanUp(state);
+                if (_onRest) _onRest(item, slot, values);
+              }
+            },
+            onStart: onStart && (() => onStart(item, slot)),
+            onFrame: onFrame && (values => onFrame(item, slot, values)),
+            delay: trail,
+            reset: reset && slot === ENTER // Update controller
+
+          });
+
+          ctrl.update(newProps);
+          if (!state.current.paused) ctrl.start();
+        });
+      }
+
+      React.useEffect(() => {
+        state.current.mounted = mounted.current = true;
+        return () => {
+          state.current.mounted = mounted.current = false;
+          Array.from(state.current.instances).map((_ref5) => {
+            let c = _ref5[1];
+            return c.destroy();
+          });
+          state.current.instances.clear();
+        };
+      }, []);
+      return state.current.transitions.map((_ref6) => {
+        let item = _ref6.item,
+            slot = _ref6.slot,
+            key = _ref6.key;
+        return {
+          item,
+          key,
+          state: slot,
+          props: state.current.instances.get(key).getValues()
+        };
+      });
+    }
+
+    function cleanUp(state, filterKey) {
+      const deleted = state.current.deleted;
+
+      for (let _ref7 of deleted) {
+        let key = _ref7.key;
+
+        const filter = t => t.key !== key;
+
+        if (is.und(filterKey) || filterKey === key) {
+          state.current.instances.delete(key);
+          state.current.transitions = state.current.transitions.filter(filter);
+          state.current.deleted = state.current.deleted.filter(filter);
+        }
+      }
+
+      state.current.forceUpdate();
+    }
+
+    function diffItems(_ref8, props) {
+      let first = _ref8.first,
+          prevProps = _ref8.prevProps,
+          state = _objectWithoutPropertiesLoose(_ref8, ["first", "prevProps"]);
+
+      let _get2 = get(props),
+          items = _get2.items,
+          keys = _get2.keys,
+          initial = _get2.initial,
+          from = _get2.from,
+          enter = _get2.enter,
+          leave = _get2.leave,
+          update = _get2.update,
+          _get2$trail = _get2.trail,
+          trail = _get2$trail === void 0 ? 0 : _get2$trail,
+          unique = _get2.unique,
+          config = _get2.config,
+          _get2$order = _get2.order,
+          order = _get2$order === void 0 ? [ENTER, LEAVE, UPDATE] : _get2$order;
+
+      let _get3 = get(prevProps),
+          _keys = _get3.keys,
+          _items = _get3.items;
+
+      let current = _extends({}, state.current);
+
+      let deleted = [...state.deleted]; // Compare next keys with current keys
+
+      let currentKeys = Object.keys(current);
+      let currentSet = new Set(currentKeys);
+      let nextSet = new Set(keys);
+      let added = keys.filter(item => !currentSet.has(item));
+      let removed = state.transitions.filter(item => !item.destroyed && !nextSet.has(item.originalKey)).map(i => i.originalKey);
+      let updated = keys.filter(item => currentSet.has(item));
+      let delay = -trail;
+
+      while (order.length) {
+        const changeType = order.shift();
+
+        switch (changeType) {
+          case ENTER:
+            {
+              added.forEach((key, index) => {
+                // In unique mode, remove fading out transitions if their key comes in again
+                if (unique && deleted.find(d => d.originalKey === key)) deleted = deleted.filter(t => t.originalKey !== key);
+                const keyIndex = keys.indexOf(key);
+                const item = items[keyIndex];
+                const slot = first && initial !== void 0 ? 'initial' : ENTER;
+                current[key] = {
+                  slot,
+                  originalKey: key,
+                  key: unique ? String(key) : guid++,
+                  item,
+                  trail: delay = delay + trail,
+                  config: callProp(config, item, slot),
+                  from: callProp(first ? initial !== void 0 ? initial || {} : from : from, item),
+                  to: callProp(enter, item)
+                };
+              });
+              break;
+            }
+
+          case LEAVE:
+            {
+              removed.forEach(key => {
+                const keyIndex = _keys.indexOf(key);
+
+                const item = _items[keyIndex];
+                const slot = LEAVE;
+                deleted.unshift(_extends({}, current[key], {
+                  slot,
+                  destroyed: true,
+                  left: _keys[Math.max(0, keyIndex - 1)],
+                  right: _keys[Math.min(_keys.length, keyIndex + 1)],
+                  trail: delay = delay + trail,
+                  config: callProp(config, item, slot),
+                  to: callProp(leave, item)
+                }));
+                delete current[key];
+              });
+              break;
+            }
+
+          case UPDATE:
+            {
+              updated.forEach(key => {
+                const keyIndex = keys.indexOf(key);
+                const item = items[keyIndex];
+                const slot = UPDATE;
+                current[key] = _extends({}, current[key], {
+                  item,
+                  slot,
+                  trail: delay = delay + trail,
+                  config: callProp(config, item, slot),
+                  to: callProp(update, item)
+                });
+              });
+              break;
+            }
+        }
+      }
+
+      let out = keys.map(key => current[key]); // This tries to restore order for deleted items by finding their last known siblings
+      // only using the left sibling to keep order placement consistent for all deleted items
+
+      deleted.forEach((_ref9) => {
+        let left = _ref9.left,
+            right = _ref9.right,
+            item = _objectWithoutPropertiesLoose(_ref9, ["left", "right"]);
+
+        let pos; // Was it the element on the left, if yes, move there ...
+
+        if ((pos = out.findIndex(t => t.originalKey === left)) !== -1) pos += 1; // And if nothing else helps, move it to the start ¯\_(ツ)_/¯
+
+        pos = Math.max(0, pos);
+        out = [...out.slice(0, pos), item, ...out.slice(pos)];
+      });
+      return _extends({}, state, {
+        changed: added.length || removed.length || updated.length,
+        first: first && added.length === 0,
+        transitions: out,
+        current,
+        deleted,
+        prevProps: props
+      });
+    }
+
     class AnimatedStyle extends AnimatedObject {
       constructor(style) {
         if (style === void 0) {
@@ -1815,15 +2116,16 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { className: "policy-card backface" }));
     }
 
+    var SIDEPANEL_WIDTH = 400;
     function PolicyTrackerCard(props) {
         var _this = this;
-        var animStateRef = React.useRef(0);
+        var animStateRef = React.useRef(props.reveal ? 0 : 3);
         var _a = useSpring({
             from: {
                 y: 150,
-                xy: 0,
-                rot: 180,
-                scale: props.startWidth / 200
+                xy: props.reveal ? 0 : 1,
+                rot: props.reveal ? 180 : 0,
+                scale: (props.reveal ? props.startWidth : props.width) / 200
             },
             to: function (next, cancel) { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
@@ -1868,15 +2170,15 @@ var main = (function (exports, React, reactDom) {
             React.createElement(PolicyCard, { party: props.party })));
     }
     function PolicyTracker(props) {
-        var screen = props.screen, party = props.party, numCards = props.numCards;
-        var scale = Math.min(screen.width / 1800, screen.height / 800);
+        var screen = props.screen, party = props.party, numCards = props.numCards, reveal = props.reveal;
+        var scale = Math.min((screen.width - SIDEPANEL_WIDTH) / 1400, screen.height / 800, 1);
         var maxNumCards = party == 'Liberal' ? 5 : 6;
         var width = scale * ((maxNumCards * 170) + 40);
         var height = scale * (224 + 60);
         var top = scale * (party == 'Liberal' ? 200 : 550);
         var cards = [];
-        for (var i = 0; i < numCards; i++) {
-            cards.push(React.createElement(PolicyTrackerCard, { party: party, x: scale * 170 * (i - 0.5 * (maxNumCards - 1)), y: top, width: 200 * scale, startWidth: 500 * scale }));
+        for (var i = 0; i < numCards + (reveal ? 1 : 0); i++) {
+            cards.push(React.createElement(PolicyTrackerCard, { party: party, x: scale * 170 * (i - 0.5 * (maxNumCards - 1)) - (0.5 * SIDEPANEL_WIDTH), y: top, width: 200 * scale, startWidth: 500 * scale, reveal: reveal && i == numCards }));
         }
         var boardStyles = {
             position: 'absolute',
@@ -1884,7 +2186,7 @@ var main = (function (exports, React, reactDom) {
             top: top,
             width: width,
             height: height,
-            marginLeft: -0.5 * width,
+            marginLeft: -0.5 * (width + SIDEPANEL_WIDTH),
             marginTop: -0.5 * height,
             backgroundColor: 'black'
         };
@@ -1893,19 +2195,86 @@ var main = (function (exports, React, reactDom) {
             cards);
     }
 
-    function PlayBoard(props) {
-        var screen = useWindowSize();
-        return (React.createElement("div", { className: "play-board" },
-            React.createElement(PolicyTracker, { screen: screen, party: "Liberal", numCards: props.numLiberalCards }),
-            React.createElement(PolicyTracker, { screen: screen, party: "Fascist", numCards: props.numFascistCards })));
+    function NightRoundModal() {
+        return React.createElement(React.Fragment, null,
+            React.createElement("h1", null, "Night Round"));
+    }
+    function ElectionModal(props) {
+        var election = props.election, players = props.players;
+        return React.createElement(React.Fragment, null,
+            React.createElement("h1", null, "Election"),
+            React.createElement("p", null,
+                "President: ",
+                players[election.presidentElect].name),
+            React.createElement("p", null,
+                "Chancellor: ",
+                election.chancellorElect ? players[election.chancellorElect].name : 'Not chosen'),
+            election.chancellorElect && (election.voteResult == null ? (React.createElement("p", null, "Voting in progress...")) : (React.createElement("p", null,
+                "Vote result: ",
+                election.voteResult ? 'JA!' : 'NEIN!'))));
+    }
+    function LegislativeModal(props) {
+        var state = props.state, players = props.players;
+        return React.createElement(React.Fragment, null,
+            React.createElement("h1", null, "Legislative Session"),
+            React.createElement("p", null,
+                "Turn: ",
+                state.turn),
+            React.createElement("p", null,
+                "Cards: ",
+                state.cards.join(', ')));
+    }
+    function ExecutiveModal(props) {
+        var state = props.state, players = props.players;
+        return React.createElement(React.Fragment, null,
+            React.createElement("h1", null, "Executive Action"),
+            React.createElement("p", null, state.action));
     }
 
-    function deriveBoardState(state) {
-        return {
-            numLiberalCards: 1,
-            numFascistCards: 1
-        };
+    function PlayBoard(props) {
+        var screen = useWindowSize();
+        var gameStarted = ['lobby', 'nightRound'].indexOf(props.state.type) == -1;
+        var modalTransitions = useTransition(props.state, function (s) { return s.type; }, {
+            from: { transform: 'translate(0%, 100%)' },
+            enter: { transform: 'translate(0%, 0%)' },
+            leave: { transform: 'translate(0%, -100%)' },
+        });
+        var revealLib = props.state.type == 'cardReveal' && props.state.card == 'Liberal';
+        var revealFas = props.state.type == 'cardReveal' && props.state.card == 'Fascist';
+        return (React.createElement("div", { className: "play-board" },
+            gameStarted && React.createElement(React.Fragment, null,
+                React.createElement(PolicyTracker, { screen: screen, party: "Liberal", numCards: props.numLiberalCards, reveal: revealLib }),
+                React.createElement(PolicyTracker, { screen: screen, party: "Fascist", numCards: props.numFascistCards, reveal: revealFas })),
+            React.createElement("div", { className: "util" },
+                props.players.map(function (player) { return React.createElement("div", null, player.name); }),
+                React.createElement("div", null,
+                    React.createElement("p", null,
+                        React.createElement("b", null, "Election Tracker:"),
+                        " ",
+                        props.electionTracker),
+                    React.createElement("p", null,
+                        React.createElement("b", null, "Cards in deck:"),
+                        " ",
+                        props.drawPile.length))),
+            React.createElement("div", { className: "modal-wrap" }, modalTransitions.map(function (_a) {
+                var item = _a.item, key = _a.key, style = _a.props;
+                var modal;
+                if (item.type == 'nightRound') {
+                    modal = React.createElement(NightRoundModal, null);
+                }
+                if (item.type == 'election') {
+                    modal = React.createElement(ElectionModal, { election: item, players: props.players });
+                }
+                if (item.type == 'legislativeSession') {
+                    modal = React.createElement(LegislativeModal, { state: item, players: props.players });
+                }
+                if (item.type == 'executiveAction') {
+                    modal = React.createElement(ExecutiveModal, { state: item, players: props.players });
+                }
+                return modal ? (React.createElement(extendedAnimated.div, { className: "modal", style: style }, modal)) : null;
+            }))));
     }
+
     function BoardApp() {
         var _a = React.useState((function () {
             var gameId = getQueryVariable('g');
@@ -1963,7 +2332,7 @@ var main = (function (exports, React, reactDom) {
                     React.createElement("button", { onClick: createGame }, "Create New Game")));
         }
         else {
-            controls = React.createElement(PlayBoard, __assign({}, deriveBoardState()));
+            controls = React.createElement(PlayBoard, __assign({}, state));
         }
         return React.createElement("div", null,
             React.createElement("div", { className: "connection" + (connected ? ' on' : '') },

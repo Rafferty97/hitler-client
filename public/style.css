@@ -35,10 +35,13 @@ body:before {
 }
 
 .connection {
-    padding: 10px 15px;
+    padding: 12px 15px;
+    background-color: rgba(0, 0, 0, 0.25);
     border-bottom: 1px solid #888;
     line-height: 20px;
     color: #bbb;
+    height: 45px;
+    box-sizing: border-box;
 }
 
 .connection:before {
@@ -173,4 +176,41 @@ body:before {
     left: 0;
     background-color: #ddd;
     transform: rotateY(180deg);
+}
+
+.play-board .util {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 400px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-left: 3px solid black;
+}
+
+.play-board .modal-wrap {
+    position: absolute;
+    top: 0;
+    right: 400px;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.play-board .modal {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2000;
+}
+
+.play-board .modal h1 {
+    font-size: 3vw;
+    line-height: 1.4;
+    margin: 50px 0;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0.1em 0.1em 0  black;
 }
