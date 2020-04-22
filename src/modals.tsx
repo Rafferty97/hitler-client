@@ -36,7 +36,6 @@ export function LegislativeModal(props: LegislativeModalProps) {
   return <>
     <h1>Legislative Session</h1>
     <p>Turn: {state.turn}</p>
-    <p>Cards: {state.cards.join(', ')}</p>
   </>;
 }
 

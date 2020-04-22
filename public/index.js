@@ -2219,10 +2219,7 @@ var main = (function (exports, React, reactDom) {
             React.createElement("h1", null, "Legislative Session"),
             React.createElement("p", null,
                 "Turn: ",
-                state.turn),
-            React.createElement("p", null,
-                "Cards: ",
-                state.cards.join(', ')));
+                state.turn));
     }
     function ExecutiveModal(props) {
         var state = props.state, players = props.players;
@@ -2260,7 +2257,8 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { className: "util" },
                 props.players.map(function (player) { return React.createElement("div", null,
                     player.name,
-                    player.isDead && ' (DEAD)'); }),
+                    player.isDead && ' (DEAD)',
+                    player.isConfirmedNotHitler && ' (NH)'); }),
                 React.createElement("div", null,
                     React.createElement("p", null,
                         React.createElement("b", null, "Election Tracker:"),

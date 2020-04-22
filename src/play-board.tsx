@@ -35,7 +35,7 @@ export function PlayBoard(props: PlayBoardProps) {
         <PolicyTracker screen={screen} party="Fascist" numCards={props.numFascistCards} reveal={revealFas} />
       </>}
       <div className="util">
-        {props.players.map(player => <div>{player.name}{player.isDead && ' (DEAD)'}</div>)}
+        {props.players.map(player => <div>{player.name}{player.isDead && ' (DEAD)'}{player.isConfirmedNotHitler && ' (NH)'}</div>)}
         <div>
           <p><b>Election Tracker:</b> {props.electionTracker}</p>
           <p><b>Cards in deck:</b> {props.drawPile.length}</p>

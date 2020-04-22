@@ -71,7 +71,7 @@ export function PlayerApp() {
             </div>
           )}
         </>;
-        break;
+        break;        
       default:
         controls = <div>{state.action.type}</div>;
         break;
