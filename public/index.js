@@ -2228,7 +2228,19 @@ var main = (function (exports, React, reactDom) {
         var state = props.state, players = props.players;
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Executive Action"),
-            React.createElement("p", null, state.action));
+            React.createElement("p", null, state.action),
+            React.createElement("p", null,
+                "Player chosen: ",
+                state.playerChosen ? players[state.playerChosen].name : 'Not chosen'));
+    }
+    function GameOverModal(props) {
+        var state = props.state, players = props.players;
+        return React.createElement(React.Fragment, null,
+            React.createElement("h1", null, "Game Over"),
+            React.createElement("p", null,
+                state.winType,
+                " win for ",
+                state.winner));
     }
 
     function PlayBoard(props) {
@@ -2246,7 +2258,9 @@ var main = (function (exports, React, reactDom) {
                 React.createElement(PolicyTracker, { screen: screen, party: "Liberal", numCards: props.numLiberalCards, reveal: revealLib }),
                 React.createElement(PolicyTracker, { screen: screen, party: "Fascist", numCards: props.numFascistCards, reveal: revealFas })),
             React.createElement("div", { className: "util" },
-                props.players.map(function (player) { return React.createElement("div", null, player.name); }),
+                props.players.map(function (player) { return React.createElement("div", null,
+                    player.name,
+                    player.isDead && ' (DEAD)'); }),
                 React.createElement("div", null,
                     React.createElement("p", null,
                         React.createElement("b", null, "Election Tracker:"),
@@ -2270,6 +2284,9 @@ var main = (function (exports, React, reactDom) {
                 }
                 if (item.type == 'executiveAction') {
                     modal = React.createElement(ExecutiveModal, { state: item, players: props.players });
+                }
+                if (item.type == 'end') {
+                    modal = React.createElement(GameOverModal, { state: item, players: props.players });
                 }
                 return modal ? (React.createElement(extendedAnimated.div, { className: "modal", style: style }, modal)) : null;
             }))));

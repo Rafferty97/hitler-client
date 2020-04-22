@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Election, PublicPlayer, LegislativeSession, ExecutiveAction } from './types';
+import { Election, PublicPlayer, LegislativeSession, ExecutiveAction, EndGame } from './types';
 
 export function NightRoundModal() {
   return <>
@@ -50,5 +50,19 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
   return <>
     <h1>Executive Action</h1>
     <p>{state.action}</p>
+    <p>Player chosen: {state.playerChosen ? players[state.playerChosen].name : 'Not chosen'}</p>
+  </>;
+}
+
+interface GameOverModalProps {
+  state: EndGame;
+  players: PublicPlayer[];
+}
+
+export function GameOverModal(props: GameOverModalProps) {
+  const { state, players } = props;
+  return <>
+    <h1>Game Over</h1>
+    <p>{state.winType} win for {state.winner}</p>
   </>;
 }

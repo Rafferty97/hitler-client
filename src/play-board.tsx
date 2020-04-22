@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useWindowSize } from './util';
 import { PolicyTracker } from './policy-tracker';
 import { GameState, PublicPlayer, Party } from './types';
-import { NightRoundModal, ElectionModal, LegislativeModal, ExecutiveModal } from './modals';
+import { NightRoundModal, ElectionModal, LegislativeModal, ExecutiveModal, GameOverModal } from './modals';
 import { animated, useTransition } from 'react-spring';
 
 export interface PlayBoardProps {
@@ -35,7 +35,7 @@ export function PlayBoard(props: PlayBoardProps) {
         <PolicyTracker screen={screen} party="Fascist" numCards={props.numFascistCards} reveal={revealFas} />
       </>}
       <div className="util">
-        {props.players.map(player => <div>{player.name}</div>)}
+        {props.players.map(player => <div>{player.name}{player.isDead && ' (DEAD)'}</div>)}
         <div>
           <p><b>Election Tracker:</b> {props.electionTracker}</p>
           <p><b>Cards in deck:</b> {props.drawPile.length}</p>
@@ -55,6 +55,9 @@ export function PlayBoard(props: PlayBoardProps) {
           }
           if (item.type == 'executiveAction') {
             modal = <ExecutiveModal state={item} players={props.players} />;
+          }
+          if (item.type == 'end') {
+            modal = <GameOverModal state={item} players={props.players} />;
           }
           return modal ? (
             <animated.div className="modal" style={style}>{modal}</animated.div>
