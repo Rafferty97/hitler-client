@@ -17,8 +17,8 @@ export function ElectionModal(props: ElectionModalProps) {
   return <>
     <h1>Election</h1>
     <p>President: {players[election.presidentElect].name}</p>
-    <p>Chancellor: {election.chancellorElect ? players[election.chancellorElect].name : 'Not chosen'}</p>
-    {election.chancellorElect && (election.voteResult == null ? (
+    <p>Chancellor: {election.chancellorElect != null ? players[election.chancellorElect].name : 'Not chosen'}</p>
+    {election.chancellorElect != null && (election.voteResult == null ? (
       <p>Voting in progress...</p>
     ) : (
       <p>Vote result: {election.voteResult ? 'JA!' : 'NEIN!'}</p>
@@ -35,6 +35,8 @@ export function LegislativeModal(props: LegislativeModalProps) {
   const { state, players } = props;
   return <>
     <h1>Legislative Session</h1>
+    <p>President: {players[state.president].name}</p>
+    <p>Chancellor: {players[state.chancellor].name}</p>
     <p>Turn: {state.turn}</p>
   </>;
 }
@@ -49,7 +51,7 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
   return <>
     <h1>Executive Action</h1>
     <p>{state.action}</p>
-    <p>Player chosen: {state.playerChosen ? players[state.playerChosen].name : 'Not chosen'}</p>
+    <p>Player chosen: {state.playerChosen != null ? players[state.playerChosen].name : 'Not chosen'}</p>
   </>;
 }
 

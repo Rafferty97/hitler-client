@@ -197,9 +197,7 @@ var main = (function (exports, React, reactDom) {
                 return null;
             }
         })()), joinGameMsg = _a[0], setJoinGameMsg = _a[1];
-        var _b = React.useState({
-            action: { type: 'connect' }
-        }), state = _b[0], setState = _b[1];
+        var _b = React.useState(null), state = _b[0], setState = _b[1];
         var _c = React.useState(null), error = _c[0], setError = _c[1];
         var _d = useWebSocket(function (msg) {
             switch (msg.type) {
@@ -227,17 +225,21 @@ var main = (function (exports, React, reactDom) {
                 send(joinGameMsg);
         }), connected = _d[0], send = _d[1];
         var sendConnect = function (params) { return send(__assign({ type: 'player_join' }, params)); };
-        var sendAction = function (data) { return send({
-            type: 'player_action',
-            action: state.action.type,
-            data: data
-        }); };
+        var sendAction = function (data) {
+            var _a, _b;
+            return send({
+                type: 'player_action',
+                action: (_b = (_a = state === null || state === void 0 ? void 0 : state.action) === null || _a === void 0 ? void 0 : _a.type) !== null && _b !== void 0 ? _b : null,
+                data: data
+            });
+        };
         var controls, controlsClass = '';
-        if (state.action) {
-            switch (state.action.type) {
-                case 'connect':
-                    controls = React.createElement(Connect, { player: true, connect: sendConnect });
-                    break;
+        if (state) {
+            if (state.isDead) {
+                controls = React.createElement("p", null, "Sorry, you're dead :(");
+            }
+            var action = state.action;
+            switch (action === null || action === void 0 ? void 0 : action.type) {
                 case 'lobby':
                     var num = state.players.length;
                     controlsClass = 'centre';
@@ -246,15 +248,69 @@ var main = (function (exports, React, reactDom) {
                         state.action.canStart && (React.createElement("div", { className: "form-row" },
                             React.createElement("button", { onClick: function () { return sendAction('start'); } }, "Start game"))));
                     break;
-                default:
-                    controls = React.createElement("div", null, state.action.type);
+                case 'nightRound':
+                    controls = React.createElement("div", null,
+                        React.createElement("p", null, "Your secret role is:"),
+                        React.createElement("p", null, state.role),
+                        React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
+                    break;
+                case 'choosePlayer':
+                    controls = React.createElement("div", null,
+                        React.createElement("p", null,
+                            "Please choose a player (",
+                            action.subtype,
+                            "):"),
+                        action.players.map(function (p) { return state.players[p]; }).map(function (player) { return (React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction(player.id); } }, player.name))); }));
+                    break;
+                case 'vote':
+                    controls = React.createElement("div", null,
+                        React.createElement("p", null, "Please vote:"),
+                        React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction(true); } }, "JA!")),
+                        React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction(false); } }, "NEIN!")));
+                    break;
+                case 'legislative':
+                    controls = React.createElement("div", null,
+                        React.createElement("p", null, "Choose a policy to discard:"),
+                        action.cards.map(function (card, idx) { return (React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction({ type: 'discard', idx: idx }); } }, card))); }),
+                        action.canVeto && (React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction({ type: 'veto' }); } }, "VETO"))));
+                    break;
+                case 'policyPeak':
+                    controls = React.createElement("div", null,
+                        React.createElement("p", null, "Here are the top three cards:"),
+                        action.cards.map(function (card) { return React.createElement("p", null, card); }),
+                        React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
+                    break;
+                case 'vetoConsent':
+                    controls = React.createElement("div", null,
+                        React.createElement("p", null, "Do you consent to the veto?"),
+                        React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction(true); } }, "JA!")),
+                        React.createElement("div", { className: "form-row" },
+                            React.createElement("button", { onClick: function () { return sendAction(false); } }, "NEIN!")));
+                    break;
+                case 'gameover':
+                    controls = React.createElement("p", null,
+                        "The ",
+                        action.winner,
+                        "s win!");
                     break;
             }
+        }
+        else {
+            controls = React.createElement(Connect, { player: true, connect: sendConnect });
         }
         return React.createElement("div", null,
             React.createElement("div", { className: "connection" + (connected ? ' on' : '') },
                 connected ? 'Connected' : 'Offline',
                 React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
+            state && React.createElement("div", null, state.role),
             React.createElement("div", { className: "controls " + controlsClass }, controls),
             React.createElement("div", { className: "error" + (error ? ' visible' : '') }, error));
     }
@@ -2122,7 +2178,7 @@ var main = (function (exports, React, reactDom) {
         var animStateRef = React.useRef(props.reveal ? 0 : 3);
         var _a = useSpring({
             from: {
-                y: 150,
+                y: props.reveal ? 150 : 0,
                 xy: props.reveal ? 0 : 1,
                 rot: props.reveal ? 180 : 0,
                 scale: (props.reveal ? props.startWidth : props.width) / 200
@@ -2208,8 +2264,8 @@ var main = (function (exports, React, reactDom) {
                 players[election.presidentElect].name),
             React.createElement("p", null,
                 "Chancellor: ",
-                election.chancellorElect ? players[election.chancellorElect].name : 'Not chosen'),
-            election.chancellorElect && (election.voteResult == null ? (React.createElement("p", null, "Voting in progress...")) : (React.createElement("p", null,
+                election.chancellorElect != null ? players[election.chancellorElect].name : 'Not chosen'),
+            election.chancellorElect != null && (election.voteResult == null ? (React.createElement("p", null, "Voting in progress...")) : (React.createElement("p", null,
                 "Vote result: ",
                 election.voteResult ? 'JA!' : 'NEIN!'))));
     }
@@ -2217,6 +2273,12 @@ var main = (function (exports, React, reactDom) {
         var state = props.state, players = props.players;
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Legislative Session"),
+            React.createElement("p", null,
+                "President: ",
+                players[state.president].name),
+            React.createElement("p", null,
+                "Chancellor: ",
+                players[state.chancellor].name),
             React.createElement("p", null,
                 "Turn: ",
                 state.turn));
@@ -2228,7 +2290,7 @@ var main = (function (exports, React, reactDom) {
             React.createElement("p", null, state.action),
             React.createElement("p", null,
                 "Player chosen: ",
-                state.playerChosen ? players[state.playerChosen].name : 'Not chosen'));
+                state.playerChosen != null ? players[state.playerChosen].name : 'Not chosen'));
     }
     function GameOverModal(props) {
         var state = props.state, players = props.players;
@@ -2349,6 +2411,15 @@ var main = (function (exports, React, reactDom) {
         else {
             controls = React.createElement(PlayBoard, __assign({}, state));
         }
+        React.useEffect(function () {
+            var listener = function (event) {
+                if (event.which == 32) {
+                    send({ type: 'board_next' });
+                }
+            };
+            document.addEventListener('keypress', listener);
+            return function () { return document.removeEventListener('keypress', listener); };
+        }, [send]);
         return React.createElement("div", null,
             React.createElement("div", { className: "connection" + (connected ? ' on' : '') },
                 connected ? 'Connected' : 'Offline',

@@ -20,7 +20,7 @@ function PolicyTrackerCard(props: PolicyTrackerCardProps) {
 
   const { y, xy, scale, rot } = useSpring({
     from: {
-      y: 150,
+      y: props.reveal ? 150 : 0,
       xy: props.reveal ? 0 : 1,
       rot: props.reveal ? 180 : 0,
       scale: (props.reveal ? props.startWidth : props.width) / 200

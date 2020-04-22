@@ -70,6 +70,16 @@ export function BoardApp() {
     controls = <PlayBoard {...state} />;
   }
 
+  React.useEffect(() => {
+    const listener = event => {
+      if (event.which == 32) {
+        send({ type: 'board_next' });
+      }
+    };
+    document.addEventListener('keypress', listener);
+    return () => document.removeEventListener('keypress', listener);
+  }, [send]);
+
   return <div>
     <div className={`connection${connected ? ' on' : ''}`}>
       {connected ? 'Connected' : 'Offline'}

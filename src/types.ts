@@ -69,7 +69,8 @@ export interface PlayerState {
   title: PlayerTitle;
   action?: PlayerAction;
   players: PublicPlayer[];
-}
+  isDead: boolean;
+};
 
 export type PlayerTitle = 'President' | 'Chancellor' | 'President Nominee' | 'Chancellor Nominee' | 'Dead' | '';
 
