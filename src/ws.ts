@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 
-const WS_URL = 'ws://localhost:8888/play';
+const WS_URL = process.env.WS_URL || 'ws://alexanderrafferty.com:8083/';
 
 const unconnectedMessageHandler = () => {
   throw new Error('Not connected to server.');

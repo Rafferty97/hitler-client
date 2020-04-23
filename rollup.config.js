@@ -1,6 +1,7 @@
 import typescript from 'rollup-plugin-typescript';
 import resolve from 'rollup-plugin-node-resolve';
 import commonJS from 'rollup-plugin-commonjs';
+import replace from 'rollup-plugin-replace';
 
 export default {
   input: './src/index.tsx',
@@ -17,6 +18,9 @@ export default {
   plugins: [
     typescript(),
     resolve(),
-    commonJS()
+    commonJS(),
+    replace({
+      'process.env.WS_URL': JSON.stringify(process.env.WS_URL)
+    })
   ]
 }
