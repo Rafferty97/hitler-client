@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL = "ws://localhost:8888/" ;
+    var WS_URL =  'ws://alexanderrafferty.com:8083/';
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
