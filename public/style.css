@@ -19,7 +19,7 @@ body:before {
     left: 15%;
     right: 15%;
     z-index: -1000;
-    background-image: url(/img/logo.png);
+    background-image: url(./img/logo.png);
     background-size: contain;
     background-position: 50% 50%;
     background-repeat: no-repeat;
@@ -163,11 +163,11 @@ body:before {
 }
 
 .policy-card.liberal {
-    background-image: url(/img/liberal_article.png);
+    background-image: url(./img/liberal_article.png);
 }
 
 .policy-card.fascist {
-    background-image: url(/img/fascist_article.png);
+    background-image: url(./img/fascist_article.png);
 }
 
 .policy-card.backface {
