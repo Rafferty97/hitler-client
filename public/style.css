@@ -3,7 +3,7 @@ button, input {
 }
 
 body {
-    background-color: #101010;
+    background-color: #141414;
     color: white;
     margin: 0;
     padding: 0;
@@ -65,8 +65,11 @@ body:before {
 }
 
 .controls {
-    padding: 10px 15px;
+    position: relative;
+    padding: 10px 25px;
     flex-grow: 1;
+    max-width: 350px;
+    margin: 0 auto;
 }
 
 .controls.centre {
@@ -78,6 +81,13 @@ body:before {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.controls-inner {
+    position: absolute;
+    top: 10px;
+    left: 25px;
+    right: 25px;
 }
 
 .form-row {
@@ -175,7 +185,21 @@ body:before {
     top: 0;
     left: 0;
     background-color: #ddd;
+    background-image: url(./img/back_article.png);
     transform: rotateY(180deg);
+}
+
+.card-selection {
+    margin: 50px 0 0 0;
+    position: relative;
+}
+
+.card-selection .policy-card {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -75px;
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.2);
 }
 
 .play-board .util {
@@ -214,10 +238,121 @@ body:before {
     text-align: center;
     text-transform: uppercase;
     text-shadow: 0.1em 0.1em 0  black;
+    font-family: 'Germania One', sans-serif;
+    letter-spacing: 0.1em;
 }
 
 .play-board .modal p {
     font-size: 24px;
     text-align: center;
     margin: 30px 0;
+}
+
+.secret-role {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    padding: 10px;
+    background-color: black;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 16px;
+    width: 200px;
+    margin: 0 0 0 -100px;
+    box-sizing: border-box;
+}
+
+.secret-role .title {
+    line-height: 20px;
+    height: 20px;
+    transition: transform 0.4s, opacity 0.4s;
+    transform: translate(0px, 0px);
+}
+
+.secret-role .role {
+    line-height: 20px;
+    height: 20px;
+    margin-top: -20px;
+    transition: transform 0.4s, opacity 0.4s;
+    opacity: 0;
+    transform: translate(0px, 15px);
+}
+
+.secret-role:hover .title {
+    transform: translate(0px, -15px);
+    opacity: 0;
+}
+
+.secret-role:hover .role {
+    transform: translate(0px, 0px);
+    opacity: 1;
+}
+
+.btn {
+    display: block;
+    margin: 20px 0;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: #ffaa33;
+    font-weight: bold;
+    border: none;
+    width: 100%;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Germania One', sans-serif;
+}
+
+.btn:focus {
+    outline: none;
+    border: none;
+}
+
+.btn.ja {
+    background-color: white;
+    font-size: 20px;
+    padding: 20px;
+}
+
+.btn.nein {
+    background-color: black;
+    color: white;
+    font-size: 20px;
+    padding: 20px;
+}
+
+.btn.veto {
+    background: #b44;
+    color: white;
+    width: 200px;
+    margin: 0 auto;
+}
+
+.controls p {
+    font-size: 15px;
+    line-height: 22px;
+    margin: 30px 0 40px 0;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.undo-confirm {
+    position: relative;
+    margin-top: 340px;
+    display: flex;
+    z-index: 5000;
+}
+
+.btn.undo {
+    background-color: black;
+    color: #bbb;
+    margin-right: 20px;
+}
+
+p.gameover-text {
+    font-size: 24px;
+    font-family: 'Germania One', sans-serif;
 }

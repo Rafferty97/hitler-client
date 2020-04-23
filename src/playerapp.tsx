@@ -2,7 +2,52 @@ import * as React from 'react';
 import { useWebSocket } from './ws';
 import { Connect } from './connect';
 import { getQueryVariable } from './util';
-import { PlayerState } from './types';
+import { Party, PlayerState } from './types';
+import { animated, interpolate, useSpring, useTransition } from 'react-spring';
+
+function mapPlayerChoice(type: string) {
+  if (type == 'execution') return 'Choose a player to execute';
+  if (type == 'nominateChancellor') return 'President, nominate your chancellor';
+  if (type == 'investigate') return 'Which player would you like to investigate?';
+  if (type == 'specialElection') return 'Nominate a player to be the next president';
+}
+
+function CardSelectorCard(props: { party: Party, n: number, hidden: boolean, choose: () => any }) {
+  const { r, o } = useSpring({ r: props.n, o: props.hidden ? 0 : 1 });
+  return <animated.div
+    onClick={() => props.choose()}
+    style={{ transform: interpolate([r, o], (r, o) => (
+      `rotate(${10 * r}deg) translate(${80 * r}px, ${160 * (1 - o)}px)`
+    )), opacity: o }}
+    className={`policy-card ${props.party.toLowerCase()}`} />
+}
+
+function CardSelector(props: { cards: Party[], send: (msg: any) => void, veto: boolean }) {
+  const [discarded, setDiscarded] = React.useState<number>(10);
+  const s = [0, 0, 1.2, 1][props.cards.length - (discarded == 10 ? 0 : 1)];
+  const m = [0, 0, -0.6, -1][props.cards.length - (discarded == 10 ? 0 : 1)];
+
+  return <>
+    <div className="card-selection">
+      {props.cards.map((card, idx) => (
+        <CardSelectorCard
+          party={card}
+          n={s * (idx - (idx > discarded ? 1 : 0)) + m}
+          hidden={idx === discarded}
+          choose={() => { if (discarded == 10) setDiscarded(idx); }} />
+      ))}
+    </div>
+    <div className="undo-confirm">
+      {discarded == 10 ? (props.veto && (
+        <button className="btn veto" onClick={() => props.send({ type: 'veto' })}>Veto Agenda</button>
+      )) : <>
+        <button className="btn undo" onClick={() => setDiscarded(10)}>Undo</button>
+        <button className="btn confirm" onClick={() => props.send({ type: 'discard', idx: discarded })}>Confirm</button>
+      </>}
+    </div>
+  </>;
+  //choose={idx => sendAction({ type: 'discard', idx })}
+}
 
 export function PlayerApp() {
   const [joinGameMsg, setJoinGameMsg] = React.useState<any>((() => {
@@ -17,6 +62,12 @@ export function PlayerApp() {
   const [state, setState] = React.useState<PlayerState | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
+  const transition = useTransition(state?.action ?? {type:''}, item => item?.type, {
+    from: { transform: 'translate(0px, 30px)', opacity: 0 },
+    enter: { transform: 'translate(0px, 0px)', opacity: 1 },
+    leave: { transform: 'translate(0px, 30px)', opacity: 0 }
+  });
+  
   const [connected, send] = useWebSocket(msg => {
     switch (msg.type) {
       case 'game_joined':
@@ -55,92 +106,74 @@ export function PlayerApp() {
 
   let controls, controlsClass = '';
   if (state) {
-    if (state.isDead) {
-      controls = <p>Sorry, you're dead :(</p>;
-    }
-    const action = state.action;
-    switch (action?.type) {
-      case 'lobby':
-        const num = state.players.length;
-        controlsClass = 'centre';
-        controls = <>
-          <p>{num == 1 ? '1 player has joined.' : num + ' players have joined.'}</p>
-          {state.action.canStart && (
-            <div className="form-row">
-              <button onClick={() => sendAction('start')}>Start game</button>
-            </div>
-          )}
-        </>;
-        break;
-      case 'nightRound':
-        controls = <div>
-          <p>Your secret role is:</p>
-          <p>{state.role}</p>
-          <div className="form-row">
-            <button onClick={() => sendAction('done')}>Okay</button>
-          </div>
-        </div>;
-        break;
-      case 'choosePlayer':
-        controls = <div>
-          <p>Please choose a player ({action.subtype}):</p>
-          {action.players.map(p => state.players[p]).map(player => (
-            <div className="form-row">
-              <button onClick={() => sendAction(player.id)}>{player.name}</button>
-            </div>
-          ))}
-        </div>;
-        break;
-      case 'vote':
-        controls = <div>
-          <p>Please vote:</p>
-          <div className="form-row">
-            <button onClick={() => sendAction(true)}>JA!</button>
-          </div>
-          <div className="form-row">
-            <button onClick={() => sendAction(false)}>NEIN!</button>
-          </div>
-        </div>;
-        break;
-      case 'legislative':
-        controls = <div>
-          <p>Choose a policy to discard:</p>
-          {action.cards.map((card, idx) => (
-            <div className="form-row">
-              <button onClick={() => sendAction({ type: 'discard', idx })}>{card}</button>
-            </div>
-          ))}
-          {action.canVeto && (
-            <div className="form-row">
-              <button onClick={() => sendAction({ type: 'veto' })}>VETO</button>
-            </div>
-          )}
-        </div>;
-        break;
-      case 'policyPeak':
-        controls = <div>
-          <p>Here are the top three cards:</p>
-          {action.cards.map(card => <p>{card}</p>)}
-          <div className="form-row">
-            <button onClick={() => sendAction('done')}>Okay</button>
-          </div>
-        </div>;
-        break;
-      case 'vetoConsent':
-        controls = <div>
-          <p>Do you consent to the veto?</p>
-          <div className="form-row">
-            <button onClick={() => sendAction(true)}>JA!</button>
-          </div>
-          <div className="form-row">
-            <button onClick={() => sendAction(false)}>NEIN!</button>
-          </div>
-        </div>;
-        break;
-      case 'gameover':
-        controls = <p>The {action.winner}s win!</p>;
-        break;
-    }
+    controls = transition.map(({ item: action, props, key }) => (
+      <animated.div className="controls-inner" style={props}>
+      {(() => {
+        switch (action?.type) {
+          case 'lobby':
+            const num = state.players.length;
+            controlsClass = 'centre';
+            return <>
+              <p>{num == 1 ? '1 player has joined.' : num + ' players have joined.'}</p>
+              {action.canStart && (
+                <button className="btn" onClick={() => sendAction('start')}>Start game</button>
+              )}
+            </>;
+          case 'nightRound':
+            return <div>
+              <p>Your secret role is:</p>
+              <p>{state.role}</p>
+              <div className="form-row">
+                <button onClick={() => sendAction('done')}>Okay</button>
+              </div>
+            </div>;
+          case 'choosePlayer':
+            return <div>
+              <p>{mapPlayerChoice(action.subtype)}</p>
+              {action.players.map(p => state.players[p]).map(player => (
+                <button className="btn" onClick={() => sendAction(player.id)}>{player.name}</button>
+              ))}
+            </div>;
+          case 'vote':
+            return <div>
+              <p>Please vote:</p>
+              <button className="btn ja" onClick={() => sendAction(true)}>JA!</button>
+              <button className="btn nein" onClick={() => sendAction(false)}>NEIN!</button>
+            </div>;
+          case 'legislative':
+            return <div>
+              <p>Choose a policy to discard:</p>
+              <CardSelector
+                cards={action.cards}
+                send={sendAction}
+                veto={action.canVeto} />
+            </div>;
+          case 'policyPeak':
+            return <div>
+              <p>Here are the top three cards:</p>
+              {action.cards.map(card => <p>{card}</p>)}
+              <div className="form-row">
+                <button onClick={() => sendAction('done')}>Okay</button>
+              </div>
+            </div>;
+          case 'vetoConsent':
+            return <div>
+              <p>Do you consent to the veto?</p>
+              <button className="btn ja" onClick={() => sendAction(true)}>JA!</button>
+              <button className="btn nein" onClick={() => sendAction(false)}>NEIN!</button>
+            </div>;
+          case 'gameover':
+            return <p className="gameover-text">The {action.winner}s win!</p>;
+          default:
+            if (state.isDead) {
+              return <p>Sorry, you're dead :(</p>;
+            } else {
+              return <p></p>;
+            }
+        }
+      })()}
+      </animated.div>
+    ));
   } else {
     controls = <Connect player={true} connect={sendConnect} />;
   }
@@ -150,8 +183,11 @@ export function PlayerApp() {
       {connected ? 'Connected' : 'Offline'}
       <div className="gameid">{joinGameMsg?.gameId}</div>
     </div>
-    {state && <div>{state.role}</div>}
     <div className={`controls ${controlsClass}`}>{controls}</div>
+    {state && <div className="secret-role">
+      <div className="title">Secret role</div>
+      <div className="role">{state.role}</div>
+    </div>}
     <div className={`error${error ? ' visible' : ''}`}>{error}</div>
   </div>;
 }

@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://localhost:8888/" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -184,135 +184,6 @@ var main = (function (exports, React, reactDom) {
                 return decodeURIComponent(pair[1]);
             }
         }
-    }
-
-    function PlayerApp() {
-        var _a = React.useState((function () {
-            var gameId = getQueryVariable('g');
-            var playerId = getQueryVariable('p');
-            if ((gameId === null || gameId === void 0 ? void 0 : gameId.length) == 4 && playerId) {
-                return { type: 'player_join', gameId: gameId, playerId: playerId };
-            }
-            else {
-                return null;
-            }
-        })()), joinGameMsg = _a[0], setJoinGameMsg = _a[1];
-        var _b = React.useState(null), state = _b[0], setState = _b[1];
-        var _c = React.useState(null), error = _c[0], setError = _c[1];
-        var _d = useWebSocket(function (msg) {
-            switch (msg.type) {
-                case 'game_joined':
-                    var joinMsg = {
-                        type: 'player_join',
-                        gameId: msg.gameId,
-                        playerId: msg.playerId
-                    };
-                    setJoinGameMsg(joinMsg);
-                    window.history.pushState('', '', "?m=p&g=" + msg.gameId + "&p=" + msg.playerId);
-                    break;
-                case 'update':
-                    setState(msg.state);
-                    setError(null);
-                    break;
-                case 'error':
-                    setError(msg.error);
-                    throw new Error(msg.error);
-                default:
-                    throw new Error('Unknown message from server: ' + msg.type);
-            }
-        }, function () {
-            if (joinGameMsg)
-                send(joinGameMsg);
-        }), connected = _d[0], send = _d[1];
-        var sendConnect = function (params) { return send(__assign({ type: 'player_join' }, params)); };
-        var sendAction = function (data) {
-            var _a, _b;
-            return send({
-                type: 'player_action',
-                action: (_b = (_a = state === null || state === void 0 ? void 0 : state.action) === null || _a === void 0 ? void 0 : _a.type) !== null && _b !== void 0 ? _b : null,
-                data: data
-            });
-        };
-        var controls, controlsClass = '';
-        if (state) {
-            if (state.isDead) {
-                controls = React.createElement("p", null, "Sorry, you're dead :(");
-            }
-            var action = state.action;
-            switch (action === null || action === void 0 ? void 0 : action.type) {
-                case 'lobby':
-                    var num = state.players.length;
-                    controlsClass = 'centre';
-                    controls = React.createElement(React.Fragment, null,
-                        React.createElement("p", null, num == 1 ? '1 player has joined.' : num + ' players have joined.'),
-                        state.action.canStart && (React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction('start'); } }, "Start game"))));
-                    break;
-                case 'nightRound':
-                    controls = React.createElement("div", null,
-                        React.createElement("p", null, "Your secret role is:"),
-                        React.createElement("p", null, state.role),
-                        React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
-                    break;
-                case 'choosePlayer':
-                    controls = React.createElement("div", null,
-                        React.createElement("p", null,
-                            "Please choose a player (",
-                            action.subtype,
-                            "):"),
-                        action.players.map(function (p) { return state.players[p]; }).map(function (player) { return (React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction(player.id); } }, player.name))); }));
-                    break;
-                case 'vote':
-                    controls = React.createElement("div", null,
-                        React.createElement("p", null, "Please vote:"),
-                        React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction(true); } }, "JA!")),
-                        React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction(false); } }, "NEIN!")));
-                    break;
-                case 'legislative':
-                    controls = React.createElement("div", null,
-                        React.createElement("p", null, "Choose a policy to discard:"),
-                        action.cards.map(function (card, idx) { return (React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction({ type: 'discard', idx: idx }); } }, card))); }),
-                        action.canVeto && (React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction({ type: 'veto' }); } }, "VETO"))));
-                    break;
-                case 'policyPeak':
-                    controls = React.createElement("div", null,
-                        React.createElement("p", null, "Here are the top three cards:"),
-                        action.cards.map(function (card) { return React.createElement("p", null, card); }),
-                        React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
-                    break;
-                case 'vetoConsent':
-                    controls = React.createElement("div", null,
-                        React.createElement("p", null, "Do you consent to the veto?"),
-                        React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction(true); } }, "JA!")),
-                        React.createElement("div", { className: "form-row" },
-                            React.createElement("button", { onClick: function () { return sendAction(false); } }, "NEIN!")));
-                    break;
-                case 'gameover':
-                    controls = React.createElement("p", null,
-                        "The ",
-                        action.winner,
-                        "s win!");
-                    break;
-            }
-        }
-        else {
-            controls = React.createElement(Connect, { player: true, connect: sendConnect });
-        }
-        return React.createElement("div", null,
-            React.createElement("div", { className: "connection" + (connected ? ' on' : '') },
-                connected ? 'Connected' : 'Offline',
-                React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
-            state && React.createElement("div", null, state.role),
-            React.createElement("div", { className: "controls " + controlsClass }, controls),
-            React.createElement("div", { className: "error" + (error ? ' visible' : '') }, error));
     }
 
     function _extends() {
@@ -2165,6 +2036,157 @@ var main = (function (exports, React, reactDom) {
     // Extend animated with all the available THREE elements
     const apply = merge(createAnimatedComponent, false);
     const extendedAnimated = apply(domElements);
+
+    function mapPlayerChoice(type) {
+        if (type == 'execution')
+            return 'Choose a player to execute';
+        if (type == 'nominateChancellor')
+            return 'President, nominate your chancellor';
+        if (type == 'investigate')
+            return 'Which player would you like to investigate?';
+        if (type == 'specialElection')
+            return 'Nominate a player to be the next president';
+    }
+    function CardSelectorCard(props) {
+        var _a = useSpring({ r: props.n, o: props.hidden ? 0 : 1 }), r = _a.r, o = _a.o;
+        return React.createElement(extendedAnimated.div, { onClick: function () { return props.choose(); }, style: { transform: interpolate$1([r, o], function (r, o) { return ("rotate(" + 10 * r + "deg) translate(" + 80 * r + "px, " + 160 * (1 - o) + "px)"); }), opacity: o }, className: "policy-card " + props.party.toLowerCase() });
+    }
+    function CardSelector(props) {
+        var _a = React.useState(10), discarded = _a[0], setDiscarded = _a[1];
+        var s = [0, 0, 1.2, 1][props.cards.length - (discarded == 10 ? 0 : 1)];
+        var m = [0, 0, -0.6, -1][props.cards.length - (discarded == 10 ? 0 : 1)];
+        return React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "card-selection" }, props.cards.map(function (card, idx) { return (React.createElement(CardSelectorCard, { party: card, n: s * (idx - (idx > discarded ? 1 : 0)) + m, hidden: idx === discarded, choose: function () { if (discarded == 10)
+                    setDiscarded(idx); } })); })),
+            React.createElement("div", { className: "undo-confirm" }, discarded == 10 ? (props.veto && (React.createElement("button", { className: "btn veto", onClick: function () { return props.send({ type: 'veto' }); } }, "Veto Agenda"))) : React.createElement(React.Fragment, null,
+                React.createElement("button", { className: "btn undo", onClick: function () { return setDiscarded(10); } }, "Undo"),
+                React.createElement("button", { className: "btn confirm", onClick: function () { return props.send({ type: 'discard', idx: discarded }); } }, "Confirm"))));
+        //choose={idx => sendAction({ type: 'discard', idx })}
+    }
+    function PlayerApp() {
+        var _a;
+        var _b = React.useState((function () {
+            var gameId = getQueryVariable('g');
+            var playerId = getQueryVariable('p');
+            if ((gameId === null || gameId === void 0 ? void 0 : gameId.length) == 4 && playerId) {
+                return { type: 'player_join', gameId: gameId, playerId: playerId };
+            }
+            else {
+                return null;
+            }
+        })()), joinGameMsg = _b[0], setJoinGameMsg = _b[1];
+        var _c = React.useState(null), state = _c[0], setState = _c[1];
+        var _d = React.useState(null), error = _d[0], setError = _d[1];
+        var transition = useTransition((_a = state === null || state === void 0 ? void 0 : state.action) !== null && _a !== void 0 ? _a : { type: '' }, function (item) { return item === null || item === void 0 ? void 0 : item.type; }, {
+            from: { transform: 'translate(0px, 30px)', opacity: 0 },
+            enter: { transform: 'translate(0px, 0px)', opacity: 1 },
+            leave: { transform: 'translate(0px, 30px)', opacity: 0 }
+        });
+        var _e = useWebSocket(function (msg) {
+            switch (msg.type) {
+                case 'game_joined':
+                    var joinMsg = {
+                        type: 'player_join',
+                        gameId: msg.gameId,
+                        playerId: msg.playerId
+                    };
+                    setJoinGameMsg(joinMsg);
+                    window.history.pushState('', '', "?m=p&g=" + msg.gameId + "&p=" + msg.playerId);
+                    break;
+                case 'update':
+                    setState(msg.state);
+                    setError(null);
+                    break;
+                case 'error':
+                    setError(msg.error);
+                    throw new Error(msg.error);
+                default:
+                    throw new Error('Unknown message from server: ' + msg.type);
+            }
+        }, function () {
+            if (joinGameMsg)
+                send(joinGameMsg);
+        }), connected = _e[0], send = _e[1];
+        var sendConnect = function (params) { return send(__assign({ type: 'player_join' }, params)); };
+        var sendAction = function (data) {
+            var _a, _b;
+            return send({
+                type: 'player_action',
+                action: (_b = (_a = state === null || state === void 0 ? void 0 : state.action) === null || _a === void 0 ? void 0 : _a.type) !== null && _b !== void 0 ? _b : null,
+                data: data
+            });
+        };
+        var controls, controlsClass = '';
+        if (state) {
+            controls = transition.map(function (_a) {
+                var action = _a.item, props = _a.props, key = _a.key;
+                return (React.createElement(extendedAnimated.div, { className: "controls-inner", style: props }, (function () {
+                    switch (action === null || action === void 0 ? void 0 : action.type) {
+                        case 'lobby':
+                            var num = state.players.length;
+                            controlsClass = 'centre';
+                            return React.createElement(React.Fragment, null,
+                                React.createElement("p", null, num == 1 ? '1 player has joined.' : num + ' players have joined.'),
+                                action.canStart && (React.createElement("button", { className: "btn", onClick: function () { return sendAction('start'); } }, "Start game")));
+                        case 'nightRound':
+                            return React.createElement("div", null,
+                                React.createElement("p", null, "Your secret role is:"),
+                                React.createElement("p", null, state.role),
+                                React.createElement("div", { className: "form-row" },
+                                    React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
+                        case 'choosePlayer':
+                            return React.createElement("div", null,
+                                React.createElement("p", null, mapPlayerChoice(action.subtype)),
+                                action.players.map(function (p) { return state.players[p]; }).map(function (player) { return (React.createElement("button", { className: "btn", onClick: function () { return sendAction(player.id); } }, player.name)); }));
+                        case 'vote':
+                            return React.createElement("div", null,
+                                React.createElement("p", null, "Please vote:"),
+                                React.createElement("button", { className: "btn ja", onClick: function () { return sendAction(true); } }, "JA!"),
+                                React.createElement("button", { className: "btn nein", onClick: function () { return sendAction(false); } }, "NEIN!"));
+                        case 'legislative':
+                            return React.createElement("div", null,
+                                React.createElement("p", null, "Choose a policy to discard:"),
+                                React.createElement(CardSelector, { cards: action.cards, send: sendAction, veto: action.canVeto }));
+                        case 'policyPeak':
+                            return React.createElement("div", null,
+                                React.createElement("p", null, "Here are the top three cards:"),
+                                action.cards.map(function (card) { return React.createElement("p", null, card); }),
+                                React.createElement("div", { className: "form-row" },
+                                    React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
+                        case 'vetoConsent':
+                            return React.createElement("div", null,
+                                React.createElement("p", null, "Do you consent to the veto?"),
+                                React.createElement("button", { className: "btn ja", onClick: function () { return sendAction(true); } }, "JA!"),
+                                React.createElement("button", { className: "btn nein", onClick: function () { return sendAction(false); } }, "NEIN!"));
+                        case 'gameover':
+                            return React.createElement("p", { className: "gameover-text" },
+                                "The ",
+                                action.winner,
+                                "s win!");
+                        default:
+                            if (state.isDead) {
+                                return React.createElement("p", null, "Sorry, you're dead :(");
+                            }
+                            else {
+                                return React.createElement("p", null);
+                            }
+                    }
+                })()));
+            });
+        }
+        else {
+            controls = React.createElement(Connect, { player: true, connect: sendConnect });
+        }
+        return React.createElement("div", null,
+            React.createElement("div", { className: "connection" + (connected ? ' on' : '') },
+                connected ? 'Connected' : 'Offline',
+                React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
+            React.createElement("div", { className: "controls " + controlsClass }, controls),
+            state && React.createElement("div", { className: "secret-role" },
+                React.createElement("div", { className: "title" }, "Secret role"),
+                React.createElement("div", { className: "role" }, state.role)),
+            React.createElement("div", { className: "error" + (error ? ' visible' : '') }, error));
+    }
 
     function PolicyCard(props) {
         return React.createElement(React.Fragment, null,
