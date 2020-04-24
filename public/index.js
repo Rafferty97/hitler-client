@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://localhost:8888/" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2398,7 +2398,7 @@ var main = (function (exports, React, reactDom) {
                 copy = 'The president may now investigate a players loyalty.';
                 break;
             case 'policyPeak':
-                copy = 'The president may now peak at the top three policy cards.';
+                copy = 'The president may now peek at the top three policy cards.';
                 break;
             case 'specialElection':
                 copy = 'A special election has been called. The president must now nominate his successor.';
