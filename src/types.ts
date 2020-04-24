@@ -35,7 +35,7 @@ export interface LegislativeSession {
   type: 'legislativeSession';
   president: number;
   chancellor: number;
-  turn: 'President' | 'Chancellor' | 'Veto';
+  turn: 'President' | 'Chancellor' | 'Veto' | 'ChancellorAgain';
   cards: Party[];
   canVeto: boolean;
 }

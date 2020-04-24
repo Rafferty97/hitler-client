@@ -2056,11 +2056,39 @@ var main = (function (exports, React, reactDom) {
         var s = [0, 0, 1.2, 1][props.cards.length - (discarded == 10 ? 0 : 1)];
         var m = [0, 0, -0.6, -1][props.cards.length - (discarded == 10 ? 0 : 1)];
         return React.createElement(React.Fragment, null,
-            React.createElement("div", { className: "card-selection" }, props.cards.map(function (card, idx) { return (React.createElement(CardSelectorCard, { party: card, n: s * (idx - (idx > discarded ? 1 : 0)) + m, hidden: idx === discarded, choose: function () { if (discarded == 10)
+            React.createElement("div", { className: "card-selection" }, props.cards.map(function (card, idx) { return (React.createElement(CardSelectorCard, { party: card, n: s * (idx - (idx > discarded ? 1 : 0)) + m, hidden: props.hidden || idx === discarded, choose: function () { if (discarded == 10)
                     setDiscarded(idx); } })); })),
             React.createElement("div", { className: "undo-confirm" }, discarded == 10 ? (props.veto && (React.createElement("button", { className: "btn veto", onClick: function () { return props.send({ type: 'veto' }); } }, "Veto Agenda"))) : React.createElement(React.Fragment, null,
                 React.createElement("button", { className: "btn undo", onClick: function () { return setDiscarded(10); } }, "Undo"),
                 React.createElement("button", { className: "btn confirm", onClick: function () { return props.send({ type: 'discard', idx: discarded }); } }, "Confirm"))));
+    }
+    function PolicyPeak(props) {
+        var _a = React.useState(false), visible = _a[0], setVisible = _a[1];
+        var s = [0, 0, 1.2, 1][props.cards.length];
+        var m = [0, 0, -0.6, -1][props.cards.length];
+        return React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "card-selection" },
+                React.createElement("div", { className: "question-mark" }, "?"),
+                props.cards.map(function (card, idx) { return (React.createElement(CardSelectorCard, { party: card, n: s * idx + m, hidden: !visible, choose: function () { } })); })),
+            React.createElement("div", { className: "undo-confirm" }, !visible ? (React.createElement("button", { className: "btn veto", onClick: function () { return setVisible(true); } }, "Reveal policies")) : (React.createElement("button", { className: "btn okay", onClick: props.done }, "Done"))));
+        //choose={idx => sendAction({ type: 'discard', idx })}
+    }
+    function RevealParty(props) {
+        var _a = React.useState(false), visible = _a[0], setVisible = _a[1];
+        var style = useSpring({
+            position: 'relative',
+            margin: '50px auto',
+            width: 150,
+            height: 225,
+            transformStyle: 'preserve-3d',
+            perspective: '200px',
+            transform: visible ? 'rotateY(0deg)' : 'rotateY(180deg)'
+        });
+        return React.createElement(React.Fragment, null,
+            React.createElement(extendedAnimated.div, { onClick: function () { return setVisible(true); }, style: style },
+                React.createElement("div", { className: "policy-card " + props.party.toLowerCase() + "-party" }),
+                React.createElement("div", { className: "policy-card backface-party" })),
+            visible && (React.createElement("button", { className: "btn okay", onClick: props.done }, "Done")));
         //choose={idx => sendAction({ type: 'discard', idx })}
     }
     function PlayerApp() {
@@ -2077,12 +2105,13 @@ var main = (function (exports, React, reactDom) {
         })()), joinGameMsg = _b[0], setJoinGameMsg = _b[1];
         var _c = React.useState(null), state = _c[0], setState = _c[1];
         var _d = React.useState(null), error = _d[0], setError = _d[1];
+        var _e = React.useState(false), elementVisible = _e[0], setElementVisible = _e[1];
         var transition = useTransition((_a = state === null || state === void 0 ? void 0 : state.action) !== null && _a !== void 0 ? _a : { type: '' }, function (item) { return item === null || item === void 0 ? void 0 : item.type; }, {
             from: { transform: 'translate(0px, 30px)', opacity: 0 },
             enter: { transform: 'translate(0px, 0px)', opacity: 1 },
             leave: { transform: 'translate(0px, 30px)', opacity: 0 }
         });
-        var _e = useWebSocket(function (msg) {
+        var _f = useWebSocket(function (msg) {
             switch (msg.type) {
                 case 'game_joined':
                     var joinMsg = {
@@ -2106,7 +2135,7 @@ var main = (function (exports, React, reactDom) {
         }, function () {
             if (joinGameMsg)
                 send(joinGameMsg);
-        }), connected = _e[0], send = _e[1];
+        }), connected = _f[0], send = _f[1];
         var sendConnect = function (params) { return send(__assign({ type: 'player_join' }, params)); };
         var sendAction = function (data) {
             var _a, _b;
@@ -2131,13 +2160,13 @@ var main = (function (exports, React, reactDom) {
                         case 'nightRound':
                             return React.createElement("div", null,
                                 React.createElement("p", null, "Your secret role is:"),
-                                React.createElement("p", null, state.role),
-                                React.createElement("div", { className: "form-row" },
-                                    React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
+                                React.createElement("p", { className: "secret-role-text" }, state.role),
+                                React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('done'); } }, "Okay"));
                         case 'choosePlayer':
+                            var c_1 = action.players.length > 5 ? ' compact' : '';
                             return React.createElement("div", null,
                                 React.createElement("p", null, mapPlayerChoice(action.subtype)),
-                                action.players.map(function (p) { return state.players[p]; }).map(function (player) { return (React.createElement("button", { className: "btn", onClick: function () { return sendAction(player.id); } }, player.name)); }));
+                                action.players.map(function (p) { return state.players[p]; }).map(function (player) { return (React.createElement("button", { className: "btn" + c_1, onClick: function () { return sendAction(player.id); } }, player.name)); }));
                         case 'vote':
                             return React.createElement("div", null,
                                 React.createElement("p", null, "Please vote:"),
@@ -2149,15 +2178,20 @@ var main = (function (exports, React, reactDom) {
                                 React.createElement(CardSelector, { cards: action.cards, send: sendAction, veto: action.canVeto }));
                         case 'policyPeak':
                             return React.createElement("div", null,
-                                React.createElement("p", null, "Here are the top three cards:"),
-                                action.cards.map(function (card) { return React.createElement("p", null, card); }),
-                                React.createElement("div", { className: "form-row" },
-                                    React.createElement("button", { onClick: function () { return sendAction('done'); } }, "Okay")));
+                                React.createElement("p", null, "Top three policies:"),
+                                React.createElement(PolicyPeak, { cards: action.cards, done: function () { return sendAction('done'); } }));
                         case 'vetoConsent':
                             return React.createElement("div", null,
                                 React.createElement("p", null, "Do you consent to the veto?"),
                                 React.createElement("button", { className: "btn ja", onClick: function () { return sendAction(true); } }, "JA!"),
                                 React.createElement("button", { className: "btn nein", onClick: function () { return sendAction(false); } }, "NEIN!"));
+                        case 'investigateParty':
+                            return React.createElement("div", { style: { perspective: 400 } },
+                                React.createElement("p", null,
+                                    "Tap to reveal ",
+                                    React.createElement("b", null, state.players[action.player].name),
+                                    "'s party membership:"),
+                                React.createElement(RevealParty, { party: action.party, done: function () { return sendAction('done'); } }));
                         case 'gameover':
                             return React.createElement("p", { className: "gameover-text" },
                                 "The ",
@@ -2194,7 +2228,7 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { className: "policy-card backface" }));
     }
 
-    var SIDEPANEL_WIDTH = 400;
+    var SIDEPANEL_WIDTH = 300;
     function PolicyTrackerCard(props) {
         var _this = this;
         var animStateRef = React.useRef(props.reveal ? 0 : 3);
@@ -2259,23 +2293,41 @@ var main = (function (exports, React, reactDom) {
             cards.push(React.createElement(PolicyTrackerCard, { party: party, x: scale * 170 * (i - 0.5 * (maxNumCards - 1)) - (0.5 * SIDEPANEL_WIDTH), y: top, width: 200 * scale, startWidth: 500 * scale, reveal: reveal && i == numCards }));
         }
         var boardStyles = {
-            position: 'absolute',
-            left: '50vw',
             top: top,
             width: width,
             height: height,
             marginLeft: -0.5 * (width + SIDEPANEL_WIDTH),
-            marginTop: -0.5 * height,
-            backgroundColor: 'black'
+            marginTop: -0.5 * height
         };
+        var tiles = [];
+        if (props.party == 'Liberal') {
+            tiles = ['', '', '', '', 'liberal-win'];
+        }
+        else {
+            switch (props.numPlayers) {
+                case 5:
+                case 6:
+                    tiles = ['', '', 'policy-peak', 'kill', 'kill-veto', 'fascist-win'];
+                    break;
+                case 7:
+                case 8:
+                    tiles = ['', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+                    break;
+                case 9:
+                case 10:
+                    tiles = ['investigate', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+                    break;
+            }
+        }
         return React.createElement(React.Fragment, null,
-            React.createElement("div", { style: boardStyles }),
+            React.createElement("div", { className: "board", style: boardStyles }, tiles.map(function (tile) { return React.createElement("div", { className: "board-tile " + tile }); })),
             cards);
     }
 
     function NightRoundModal() {
         return React.createElement(React.Fragment, null,
-            React.createElement("h1", null, "Night Round"));
+            React.createElement("h1", null, "Night Round"),
+            React.createElement("p", null, "You have now been given your secret role."));
     }
     function ElectionModal(props) {
         var election = props.election, players = props.players;
@@ -2293,6 +2345,21 @@ var main = (function (exports, React, reactDom) {
     }
     function LegislativeModal(props) {
         var state = props.state, players = props.players;
+        var turnCopy;
+        switch (state.turn) {
+            case 'President':
+                turnCopy = 'The president is discarding a policy.';
+                break;
+            case 'Chancellor':
+                turnCopy = 'The chancellor is discarding a policy.';
+                break;
+            case 'Veto':
+                turnCopy = 'The chancellor has called for a VETO!';
+                break;
+            case 'ChancellorAgain':
+                turnCopy = 'The president has rejected the VETO. The chancellor must discard a policy.';
+                break;
+        }
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Legislative Session"),
             React.createElement("p", null,
@@ -2301,18 +2368,31 @@ var main = (function (exports, React, reactDom) {
             React.createElement("p", null,
                 "Chancellor: ",
                 players[state.chancellor].name),
-            React.createElement("p", null,
-                "Turn: ",
-                state.turn));
+            React.createElement("p", null, turnCopy));
     }
     function ExecutiveModal(props) {
         var state = props.state, players = props.players;
+        var copy;
+        switch (props.state.action) {
+            case 'execution':
+                copy = 'The president must now execute a player.';
+                break;
+            case 'investigate':
+                copy = 'The president may now investigate a players loyalty.';
+                break;
+            case 'policyPeak':
+                copy = 'The president may now peak at the top three policy cards.';
+                break;
+            case 'specialElection':
+                copy = 'A special election has been called. The president must now nominate his successor.';
+                break;
+        }
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Executive Action"),
-            React.createElement("p", null, state.action),
-            React.createElement("p", null,
+            React.createElement("p", null, copy),
+            state.playerChosen != null && (React.createElement("p", null,
                 "Player chosen: ",
-                state.playerChosen != null ? players[state.playerChosen].name : 'Not chosen'));
+                players[state.playerChosen].name)));
     }
     function GameOverModal(props) {
         var state = props.state, players = props.players;
@@ -2332,14 +2412,15 @@ var main = (function (exports, React, reactDom) {
             enter: { transform: 'translate(0%, 0%)' },
             leave: { transform: 'translate(0%, -100%)' },
         });
+        var numPlayers = props.players.length;
         var revealLib = props.state.type == 'cardReveal' && props.state.card == 'Liberal';
         var revealFas = props.state.type == 'cardReveal' && props.state.card == 'Fascist';
         return (React.createElement("div", { className: "play-board" },
             gameStarted && React.createElement(React.Fragment, null,
-                React.createElement(PolicyTracker, { screen: screen, party: "Liberal", numCards: props.numLiberalCards, reveal: revealLib }),
-                React.createElement(PolicyTracker, { screen: screen, party: "Fascist", numCards: props.numFascistCards, reveal: revealFas })),
+                React.createElement(PolicyTracker, { screen: screen, party: "Liberal", numCards: props.numLiberalCards, reveal: revealLib, numPlayers: numPlayers }),
+                React.createElement(PolicyTracker, { screen: screen, party: "Fascist", numCards: props.numFascistCards, reveal: revealFas, numPlayers: numPlayers })),
             React.createElement("div", { className: "util" },
-                props.players.map(function (player) { return React.createElement("div", null,
+                props.players.map(function (player) { return React.createElement("p", null,
                     player.name,
                     player.isDead && ' (DEAD)',
                     player.isConfirmedNotHitler && ' (NH)'); }),

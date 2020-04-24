@@ -22,7 +22,7 @@ function CardSelectorCard(props: { party: Party, n: number, hidden: boolean, cho
     className={`policy-card ${props.party.toLowerCase()}`} />
 }
 
-function CardSelector(props: { cards: Party[], send: (msg: any) => void, veto: boolean }) {
+function CardSelector(props: { cards: Party[], send: (msg: any) => void, veto: boolean, hidden?: boolean }) {
   const [discarded, setDiscarded] = React.useState<number>(10);
   const s = [0, 0, 1.2, 1][props.cards.length - (discarded == 10 ? 0 : 1)];
   const m = [0, 0, -0.6, -1][props.cards.length - (discarded == 10 ? 0 : 1)];
@@ -33,7 +33,7 @@ function CardSelector(props: { cards: Party[], send: (msg: any) => void, veto: b
         <CardSelectorCard
           party={card}
           n={s * (idx - (idx > discarded ? 1 : 0)) + m}
-          hidden={idx === discarded}
+          hidden={props.hidden || idx === discarded}
           choose={() => { if (discarded == 10) setDiscarded(idx); }} />
       ))}
     </div>
@@ -45,6 +45,57 @@ function CardSelector(props: { cards: Party[], send: (msg: any) => void, veto: b
         <button className="btn confirm" onClick={() => props.send({ type: 'discard', idx: discarded })}>Confirm</button>
       </>}
     </div>
+  </>;
+}
+
+function PolicyPeak(props: { cards: Party[], done: () => any }) {
+  const [visible, setVisible] = React.useState(false);
+  const s = [0, 0, 1.2, 1][props.cards.length];
+  const m = [0, 0, -0.6, -1][props.cards.length];
+
+  return <>
+    <div className="card-selection">
+      <div className="question-mark">?</div>
+      {props.cards.map((card, idx) => (
+        <CardSelectorCard
+          party={card}
+          n={s * idx + m}
+          hidden={!visible}
+          choose={() => {}} />
+      ))}
+    </div>
+    <div className="undo-confirm">
+      {!visible ? (
+        <button className="btn veto" onClick={() => setVisible(true)}>Reveal policies</button>
+      ) : (
+        <button className="btn okay" onClick={props.done}>Done</button>
+      )}
+    </div>
+  </>;
+  //choose={idx => sendAction({ type: 'discard', idx })}
+}
+
+function RevealParty(props: { party: Party, done: () => any }) {
+  const [visible, setVisible] = React.useState(false);
+
+  const style = useSpring({
+    position: 'relative',
+    margin: '50px auto',
+    width: 150,
+    height: 225,
+    transformStyle: 'preserve-3d',
+    perspective: '200px',
+    transform: visible ? 'rotateY(0deg)' : 'rotateY(180deg)'
+  });
+
+  return <>
+    <animated.div onClick={() => setVisible(true)} style={style}>  
+      <div className={`policy-card ${props.party.toLowerCase()}-party`} />
+      <div className="policy-card backface-party" />
+    </animated.div>
+    {visible && (
+      <button className="btn okay" onClick={props.done}>Done</button>
+    )}
   </>;
   //choose={idx => sendAction({ type: 'discard', idx })}
 }
@@ -61,8 +112,9 @@ export function PlayerApp() {
   })());
   const [state, setState] = React.useState<PlayerState | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [elementVisible, setElementVisible] = React.useState(false);
 
-  const transition = useTransition(state?.action ?? {type:''}, item => item?.type, {
+  const transition = useTransition(state?.action ?? { type: '' as '' }, item => item?.type, {
     from: { transform: 'translate(0px, 30px)', opacity: 0 },
     enter: { transform: 'translate(0px, 0px)', opacity: 1 },
     leave: { transform: 'translate(0px, 30px)', opacity: 0 }
@@ -122,16 +174,15 @@ export function PlayerApp() {
           case 'nightRound':
             return <div>
               <p>Your secret role is:</p>
-              <p>{state.role}</p>
-              <div className="form-row">
-                <button onClick={() => sendAction('done')}>Okay</button>
-              </div>
+              <p className="secret-role-text">{state.role}</p>
+              <button className="btn okay" onClick={() => sendAction('done')}>Okay</button>
             </div>;
           case 'choosePlayer':
+            const c = action.players.length > 5 ? ' compact' : '';
             return <div>
               <p>{mapPlayerChoice(action.subtype)}</p>
               {action.players.map(p => state.players[p]).map(player => (
-                <button className="btn" onClick={() => sendAction(player.id)}>{player.name}</button>
+                <button className={`btn${c}`} onClick={() => sendAction(player.id)}>{player.name}</button>
               ))}
             </div>;
           case 'vote':
@@ -150,17 +201,19 @@ export function PlayerApp() {
             </div>;
           case 'policyPeak':
             return <div>
-              <p>Here are the top three cards:</p>
-              {action.cards.map(card => <p>{card}</p>)}
-              <div className="form-row">
-                <button onClick={() => sendAction('done')}>Okay</button>
-              </div>
+              <p>Top three policies:</p>
+              <PolicyPeak cards={action.cards} done={() => sendAction('done')} />
             </div>;
           case 'vetoConsent':
             return <div>
               <p>Do you consent to the veto?</p>
               <button className="btn ja" onClick={() => sendAction(true)}>JA!</button>
               <button className="btn nein" onClick={() => sendAction(false)}>NEIN!</button>
+            </div>;
+          case 'investigateParty':
+            return <div style={{ perspective: 400 }}>
+              <p>Tap to reveal <b>{state.players[action.player].name}</b>'s party membership:</p>
+              <RevealParty party={action.party} done={() => sendAction('done')} />
             </div>;
           case 'gameover':
             return <p className="gameover-text">The {action.winner}s win!</p>;

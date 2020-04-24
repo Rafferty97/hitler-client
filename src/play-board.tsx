@@ -25,17 +25,18 @@ export function PlayBoard(props: PlayBoardProps) {
     leave: { transform: 'translate(0%, -100%)' },
   })
 
+  const numPlayers = props.players.length;
   const revealLib = props.state.type == 'cardReveal' && props.state.card == 'Liberal';
   const revealFas = props.state.type == 'cardReveal' && props.state.card == 'Fascist';
 
   return (
     <div className="play-board">
       {gameStarted && <>
-        <PolicyTracker screen={screen} party="Liberal" numCards={props.numLiberalCards} reveal={revealLib} />
-        <PolicyTracker screen={screen} party="Fascist" numCards={props.numFascistCards} reveal={revealFas} />
+        <PolicyTracker screen={screen} party="Liberal" numCards={props.numLiberalCards} reveal={revealLib} numPlayers={numPlayers} />
+        <PolicyTracker screen={screen} party="Fascist" numCards={props.numFascistCards} reveal={revealFas} numPlayers={numPlayers} />
       </>}
       <div className="util">
-        {props.players.map(player => <div>{player.name}{player.isDead && ' (DEAD)'}{player.isConfirmedNotHitler && ' (NH)'}</div>)}
+        {props.players.map(player => <p>{player.name}{player.isDead && ' (DEAD)'}{player.isConfirmedNotHitler && ' (NH)'}</p>)}
         <div>
           <p><b>Election Tracker:</b> {props.electionTracker}</p>
           <p><b>Cards in deck:</b> {props.drawPile.length}</p>

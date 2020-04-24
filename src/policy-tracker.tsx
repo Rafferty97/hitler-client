@@ -4,7 +4,7 @@ import { useWindowSize } from './util';
 import { Party } from './types';
 import { PolicyCard } from './policy-card';
 
-const SIDEPANEL_WIDTH = 400;
+const SIDEPANEL_WIDTH = 300;
 
 interface PolicyTrackerCardProps {
   party: Party;
@@ -66,6 +66,7 @@ interface PolicyTrackerProps {
   party: Party;
   numCards: number;
   reveal: boolean;
+  numPlayers: number;
 }
 
 export function PolicyTracker(props: PolicyTrackerProps) {
@@ -93,18 +94,37 @@ export function PolicyTracker(props: PolicyTrackerProps) {
   }
 
   const boardStyles = {
-    position: 'absolute',
-    left: '50vw',
     top,
     width,
     height,
     marginLeft: -0.5 * (width + SIDEPANEL_WIDTH),
-    marginTop: -0.5 * height,
-    backgroundColor: 'black'
+    marginTop: -0.5 * height
   };
 
+  let tiles: string[] = [];
+  if (props.party == 'Liberal') {
+    tiles = ['', '', '', '', 'liberal-win'];
+  } else {
+    switch (props.numPlayers) {
+      case 5:
+      case 6:
+        tiles = ['', '', 'policy-peak', 'kill', 'kill-veto', 'fascist-win'];
+        break;
+      case 7:
+      case 8:
+        tiles = ['', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+        break;
+      case 9:
+      case 10:
+        tiles = ['investigate', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+        break;
+    }
+  }
+
   return <>
-    <div style={boardStyles}></div>
+    <div className="board" style={boardStyles}>
+      {tiles.map(tile => <div className={`board-tile ${tile}`} />)}
+    </div>
     {cards}
   </>;
 }

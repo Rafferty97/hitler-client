@@ -3,7 +3,7 @@ button, input {
 }
 
 body {
-    background-color: #141414;
+    background-color: #1b1b1b;
     color: white;
     margin: 0;
     padding: 0;
@@ -180,6 +180,14 @@ body:before {
     background-image: url(./img/fascist_article.png);
 }
 
+.policy-card.liberal-party {
+    background-image: url(./img/liberal_party.png);
+}
+
+.policy-card.fascist-party {
+    background-image: url(./img/fascist_party.png);
+}
+
 .policy-card.backface {
     position: absolute;
     top: 0;
@@ -189,9 +197,78 @@ body:before {
     transform: rotateY(180deg);
 }
 
+.policy-card.backface-party {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #ddd;
+    background-image: url(./img/back_party.png);
+    transform: rotateY(180deg);
+}
+
+.board {
+    position: absolute;
+    left: 50vw;
+    background-color: black;
+    display: flex;
+    padding: 18px 20px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.1);
+}
+
+.board-tile {
+    background-size: 90% auto;
+    background-position: 50% 50%;
+    flex: 1 1 0;
+}
+
+.board-tile + .board-tile {
+    border-left: 2px dashed #444;
+}
+
+.board-tile.fascist-win {
+    background-image: url(./img/board_fascist_win.png);
+}
+
+.board-tile.liberal-win {
+    background-image: url(./img/board_liberal_win.png);
+}
+
+.board-tile.investigate {
+    background-image: url(./img/board_investigate.png);
+}
+
+.board-tile.policy-peak {
+    background-image: url(./img/board_policy_peak.png);
+}
+
+.board-tile.kill {
+    background-image: url(./img/board_kill.png);
+}
+
+.board-tile.kill-veto {
+    background-image: url(./img/board_kill_veto.png);
+}
+
+
 .card-selection {
     margin: 50px 0 0 0;
     position: relative;
+}
+
+.card-selection .question-mark {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    margin-left: -50px;
+    width: 100px;
+    height: 100px;
+    color: #888;
+    font-size: 90px;
+    line-height: 100px;
+    text-align: center;
+    font-family: 'Germania One', sans-serif;
 }
 
 .card-selection .policy-card {
@@ -207,15 +284,17 @@ body:before {
     top: 0;
     right: 0;
     bottom: 0;
-    width: 400px;
+    width: 300px;
     background-color: rgba(0, 0, 0, 0.5);
     border-left: 3px solid black;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .play-board .modal-wrap {
     position: absolute;
     top: 0;
-    right: 400px;
+    right: 300px;
     bottom: 0;
     left: 0;
     overflow: hidden;
@@ -228,7 +307,7 @@ body:before {
     bottom: 0;
     left: 0;
     z-index: 2000;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .play-board .modal h1 {
@@ -246,6 +325,12 @@ body:before {
     font-size: 24px;
     text-align: center;
     margin: 30px 0;
+}
+
+.controls p.secret-role-text {
+    font-family: 'Germania One', sans-serif;
+    font-size: 26px;
+    line-height: 30px;
 }
 
 .secret-role {
@@ -310,6 +395,11 @@ body:before {
     border: none;
 }
 
+.btn.compact {
+    margin: 10px 0;
+    padding: 6px;
+}
+
 .btn.ja {
     background-color: white;
     font-size: 20px;
@@ -326,6 +416,13 @@ body:before {
 .btn.veto {
     background: #b44;
     color: white;
+    width: 200px;
+    margin: 0 auto;
+}
+
+.btn.okay {
+    background: white;
+    color: black;
     width: 200px;
     margin: 0 auto;
 }
