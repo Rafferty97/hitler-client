@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://localhost:8888/" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2158,9 +2158,26 @@ var main = (function (exports, React, reactDom) {
                                 React.createElement("p", null, num == 1 ? '1 player has joined.' : num + ' players have joined.'),
                                 action.canStart && (React.createElement("button", { className: "btn", onClick: function () { return sendAction('start'); } }, "Start game")));
                         case 'nightRound':
+                            var fascists = [];
+                            var hitler = '';
+                            if (action.roles) {
+                                for (var i = 0; i < state.players.length; i++) {
+                                    if (action.roles[i] == 'Fascist')
+                                        fascists.push(state.players[i].name);
+                                    if (action.roles[i] == 'Hitler')
+                                        hitler = state.players[i].name;
+                                }
+                            }
                             return React.createElement("div", null,
                                 React.createElement("p", null, "Your secret role is:"),
                                 React.createElement("p", { className: "secret-role-text" }, state.role),
+                                action.roles && React.createElement(React.Fragment, null,
+                                    React.createElement("div", { className: "player-wrap" },
+                                        React.createElement("p", null, "Fascists:"),
+                                        fascists.map(function (name) { return React.createElement("p", { className: "player" }, name); })),
+                                    React.createElement("div", { className: "player-wrap" },
+                                        React.createElement("p", null, "Hitler:"),
+                                        React.createElement("p", { className: "player" }, hitler))),
                                 React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('done'); } }, "Okay"));
                         case 'choosePlayer':
                             var c_1 = action.players.length > 5 ? ' compact' : '';

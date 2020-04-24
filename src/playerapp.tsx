@@ -172,9 +172,27 @@ export function PlayerApp() {
               )}
             </>;
           case 'nightRound':
+            const fascists: string[] = [];
+            let hitler = '';
+            if (action.roles) {
+              for (let i = 0; i < state.players.length; i++) {
+                if (action.roles[i] == 'Fascist') fascists.push(state.players[i].name);
+                if (action.roles[i] == 'Hitler') hitler = state.players[i].name;
+              }
+            }
             return <div>
               <p>Your secret role is:</p>
               <p className="secret-role-text">{state.role}</p>
+              {action.roles && <>
+                <div className="player-wrap">
+                  <p>Fascists:</p>
+                  {fascists.map(name => <p className="player">{name}</p>)}
+                </div>
+                <div className="player-wrap">
+                <p>Hitler:</p>
+                  <p className="player">{hitler}</p>
+                </div>
+              </>}
               <button className="btn okay" onClick={() => sendAction('done')}>Okay</button>
             </div>;
           case 'choosePlayer':

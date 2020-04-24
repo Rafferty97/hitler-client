@@ -28,7 +28,6 @@ body:before {
 
 #app {
     position: relative;
-    height: 95vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -66,7 +65,7 @@ body:before {
 
 .controls {
     position: relative;
-    padding: 10px 25px;
+    padding: 10px 25px 80px 25px;
     flex-grow: 1;
     max-width: 350px;
     margin: 0 auto;
@@ -81,13 +80,6 @@ body:before {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-}
-
-.controls-inner {
-    position: absolute;
-    top: 10px;
-    left: 25px;
-    right: 25px;
 }
 
 .form-row {
@@ -331,11 +323,34 @@ body:before {
     font-family: 'Germania One', sans-serif;
     font-size: 26px;
     line-height: 30px;
+    margin: -15px 0 35px 0;
+}
+
+.controls .player-wrap {
+    padding: 14px 0;
+    margin: 0 auto;
+    border-top: 1px dashed #666;
+    text-align: center;
+    width: 200px;
+}
+
+.controls .player-wrap p {
+    margin: 0 0 6px 0;
+    text-align: center;
+    font-size: 14px;
+}
+
+.controls .player-wrap p.player {
+    font-family: 'Germania One', sans-serif;
+    padding: 6px 20px 5px 20px;
+    margin: 0;
+    font-size: 18px;
+    line-height: 20px;
 }
 
 .secret-role {
-    position: absolute;
-    bottom: 0;
+    position: fixed;
+    bottom: 20px;
     left: 50%;
     padding: 10px;
     background-color: black;
@@ -438,7 +453,7 @@ body:before {
 
 .undo-confirm {
     position: relative;
-    margin-top: 340px;
+    margin-top: 310px;
     display: flex;
     z-index: 5000;
 }
