@@ -2729,6 +2729,7 @@ var main = (function (exports, React, reactDom) {
         return React.createElement("div", null,
             React.createElement("div", { className: "connection on-board" + (connected ? ' on' : '') },
                 connected ? 'Connected' : 'Offline',
+                React.createElement("a", { href: "/hitler", className: "home" }, "HOME"),
                 React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
             controls,
             React.createElement("div", { className: "error" + (error ? ' visible' : '') }, error));
