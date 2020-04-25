@@ -29,7 +29,7 @@ var main = (function (exports, React, reactDom) {
         return __assign.apply(this, arguments);
     };
 
-    var WS_URL = "ws://192.168.1.13:8888" ;
+    var WS_URL =  'wss://alexanderrafferty.com:8083/';
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
