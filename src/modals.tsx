@@ -42,7 +42,7 @@ export function ElectionModal(props: ElectionModalProps) {
 
   React.useEffect(() => {
     if (showResult) {
-      const timeout = setTimeout(props.done, 3000);
+      const timeout = setTimeout(props.done, 4000);
       return () => clearTimeout(timeout);
     }
   }, [showResult]);

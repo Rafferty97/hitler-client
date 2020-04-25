@@ -1,9 +1,18 @@
 import * as React from 'react';
 
+const neinSound = new Audio('./sound/nein.mp3');
+
 export function VoteResult(props: { result: 'ja' | 'nein' | 'veto' }) {
   const [started, setStarted] = React.useState(false);
   React.useEffect(() => {
-    setTimeout(() => setStarted(true), 5);
+    setTimeout(() => {
+      setStarted(true);
+      switch (props.result) {
+        case 'nein':
+          neinSound.play();
+          break;
+      }
+    }, 5);
   }, []);
   return <div className={`vote-result${started ? ' show' : ''}`}>
     <div className={props.result}>

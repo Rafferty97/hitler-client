@@ -660,3 +660,69 @@ p.gameover-text {
     background-color: black;
     color: white;
 }
+
+.election-tracker {
+    position: absolute;
+    bottom: 30px;
+    left: 15px;
+    right: 15px;
+}
+
+.election-tracker p {
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+    margin: 20px 0;
+    color: #bbb;
+    text-shadow: 0 -2px 0 black;
+}
+
+.election-tracker p.cards-in-deck {
+    font-size: 48px;
+    line-height: 1em;
+    font-family: 'Germania One', sans-serif;
+    margin: -5px 0 0 0;
+    color: white;
+}
+
+.election-tracker > div {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.election-tracker > div:before {
+    content: "";
+    display: block;
+    position: absolute;
+    z-index: -100;
+    left: 12.5%;
+    right: 12.5%;
+    top: 50%;
+    margin-top: -1;
+    border-bottom: 2px dashed #ddd;
+}
+
+.election-tracker .dot {
+    border: 2px solid #ddd;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    box-sizing: border-box;
+    background: black;
+}
+
+.election-tracker .token {
+    position: absolute;
+    background-color: #b22;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    margin: 0 0 0 -10px;
+    transition: left 0.8s;
+    border-radius: 15px;
+    box-sizing: border-box;
+    border: 2px solid #400;
+}

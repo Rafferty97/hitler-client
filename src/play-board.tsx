@@ -5,6 +5,7 @@ import { GameState, PublicPlayer, Party } from './types';
 import { NightRoundModal, ElectionModal, LegislativeModal, ExecutiveModal, GameOverModal } from './modals';
 import { animated, useTransition } from 'react-spring';
 import { VoteResult } from './vote-result';
+import { ElectionTracker } from './election-tracker';
 
 function PlayerItem(props: { player: PublicPlayer, vote: boolean | null }) {
   const { player, vote: vote_ } = props;
@@ -89,8 +90,7 @@ export function PlayBoard(props: PlayBoardProps) {
       <div className="util">
         {props.players.map((player, i) => <PlayerItem player={player} vote={getVote(i)} />)}
         <div>
-          <p><b>Election Tracker:</b> {electionTracker}</p>
-          <p><b>Cards in deck:</b> {props.drawPile.length}</p>
+          <ElectionTracker tracker={electionTracker} deck={props.drawPile.length} />
         </div>
       </div>
       <div className="modal-wrap">

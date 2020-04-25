@@ -2372,10 +2372,18 @@ var main = (function (exports, React, reactDom) {
             cards);
     }
 
+    var neinSound = new Audio('./sound/nein.mp3');
     function VoteResult(props) {
         var _a = React.useState(false), started = _a[0], setStarted = _a[1];
         React.useEffect(function () {
-            setTimeout(function () { return setStarted(true); }, 5);
+            setTimeout(function () {
+                setStarted(true);
+                switch (props.result) {
+                    case 'nein':
+                        neinSound.play();
+                        break;
+                }
+            }, 5);
         }, []);
         return React.createElement("div", { className: "vote-result" + (started ? ' show' : '') },
             React.createElement("div", { className: props.result }, props.result.toUpperCase() + '!'));
@@ -2406,7 +2414,7 @@ var main = (function (exports, React, reactDom) {
         var showVoting = useDelay(showChancellor, 1000) && election.voteResult == null;
         React.useEffect(function () {
             if (showResult) {
-                var timeout_1 = setTimeout(props.done, 3000);
+                var timeout_1 = setTimeout(props.done, 4000);
                 return function () { return clearTimeout(timeout_1); };
             }
         }, [showResult]);
@@ -2498,6 +2506,20 @@ var main = (function (exports, React, reactDom) {
                 state.winner));
     }
 
+    function ElectionTracker(props) {
+        var left = (25 * props.tracker + 12.5) + '%';
+        return React.createElement("div", { className: "election-tracker" },
+            React.createElement("p", null, "Cards in Deck"),
+            React.createElement("p", { className: "cards-in-deck" }, props.deck),
+            React.createElement("p", null, "Election Tracker"),
+            React.createElement("div", null,
+                React.createElement("div", { className: "dot" }),
+                React.createElement("div", { className: "dot" }),
+                React.createElement("div", { className: "dot" }),
+                React.createElement("div", { className: "dot" }),
+                React.createElement("div", { className: "token", style: { left: left } })));
+    }
+
     function PlayerItem(props) {
         var player = props.player, vote_ = props.vote;
         var _a = React.useState({ show: false, vote: false }), vote = _a[0], setVote = _a[1];
@@ -2557,14 +2579,7 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { className: "util" },
                 props.players.map(function (player, i) { return React.createElement(PlayerItem, { player: player, vote: getVote(i) }); }),
                 React.createElement("div", null,
-                    React.createElement("p", null,
-                        React.createElement("b", null, "Election Tracker:"),
-                        " ",
-                        electionTracker),
-                    React.createElement("p", null,
-                        React.createElement("b", null, "Cards in deck:"),
-                        " ",
-                        props.drawPile.length))),
+                    React.createElement(ElectionTracker, { tracker: electionTracker, deck: props.drawPile.length }))),
             React.createElement("div", { className: "modal-wrap" }, modalTransitions.map(function (_a) {
                 var item = _a.item, key = _a.key, style = _a.props;
                 var modal;
