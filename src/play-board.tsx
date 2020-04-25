@@ -97,7 +97,7 @@ export function PlayBoard(props: PlayBoardProps) {
         {modalTransitions.map(({ item, key, props: style }) => {
           let modal;
           if (item.type == 'nightRound') {
-            modal = <NightRoundModal />;
+            modal = <NightRoundModal key="night" />;
           }
           if (item.type == 'election') {
             modal = <ElectionModal
@@ -108,13 +108,13 @@ export function PlayBoard(props: PlayBoardProps) {
               done={props.done} />;
           }
           if (item.type == 'legislativeSession') {
-            modal = <LegislativeModal state={item} players={props.players} />;
+            modal = <LegislativeModal key="legislative" state={item} players={props.players} />;
           }
           if (item.type == 'executiveAction') {
-            modal = <ExecutiveModal state={item} players={props.players} done={props.done} />;
+            modal = <ExecutiveModal key="executive" state={item} players={props.players} done={props.done} />;
           }
           if (item.type == 'end') {
-            modal = <GameOverModal state={item} players={props.players} />;
+            modal = <GameOverModal key="gameover" state={item} players={props.players} />;
           }
           return modal ? (
             <animated.div className="modal" style={style}>{modal}</animated.div>
