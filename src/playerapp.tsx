@@ -150,11 +150,24 @@ export function PlayerApp() {
     ...params
   })
 
-  const sendAction = data => send({
-    type: 'player_action',
-    action: state?.action?.type ?? null,
-    data
-  });
+  const debouncer = React.useRef(false);
+  const sendAction = data => {
+    if (debouncer.current) return;
+    debouncer.current = true;
+    setTimeout(() => debouncer.current = false, 1000);
+    send({
+      type: 'player_action',
+      action: state?.action?.type ?? null,
+      data
+    });
+  };
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      send({ type: 'get_state' });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   let controls, controlsClass = '';
   if (state) {
@@ -233,8 +246,16 @@ export function PlayerApp() {
               <p>Tap to reveal <b>{state.players[action.player].name}</b>'s party membership:</p>
               <RevealParty party={action.party} done={() => sendAction('done')} />
             </div>;
+          case 'nextRound':
+            return <div>
+              <p>Ready to continue?</p>
+              <button className="btn okay" onClick={() => sendAction('next')}>Yes</button>
+            </div>;
           case 'gameover':
-            return <p className="gameover-text">The {action.winner}s win!</p>;
+            return <div>
+              <p className="gameover-text">The {action.winner}s win!</p>
+              <button className="btn okay" onClick={() => sendAction('restart')}>Restart</button>
+            </div>;
           default:
             if (state.isDead) {
               return <p>Sorry, you're dead :(</p>;

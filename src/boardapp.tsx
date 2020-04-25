@@ -57,6 +57,13 @@ export function BoardApp() {
     send({ type: 'create_game' });
   };
 
+  React.useEffect(() => {
+    if (state?.state?.type == 'cardReveal') {
+      const timeout = setTimeout(() => send({ type: 'board_next' }), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [state?.state?.type]);
+
   let controls;
   if (!state) {
     controls = <div className="controls">
@@ -67,18 +74,10 @@ export function BoardApp() {
       </div>
     </div>;
   } else {
-    controls = <PlayBoard {...state} />;
+    controls = <PlayBoard
+      {...state}
+      done={() => send({ type: 'board_next' })} />;
   }
-
-  React.useEffect(() => {
-    const listener = event => {
-      if (event.which == 32) {
-        send({ type: 'board_next' });
-      }
-    };
-    document.addEventListener('keypress', listener);
-    return () => document.removeEventListener('keypress', listener);
-  }, [send]);
 
   return <div>
     <div className={`connection${connected ? ' on' : ''}`}>

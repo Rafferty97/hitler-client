@@ -69,6 +69,14 @@ body:before {
     flex-grow: 1;
     max-width: 350px;
     margin: 0 auto;
+    min-height: 400px;
+}
+
+.controls-inner + .controls-inner {
+    position: absolute;
+    top: 10px;
+    left: 25px;
+    right: 25px;
 }
 
 .controls.centre {
@@ -243,7 +251,6 @@ body:before {
     background-image: url(./img/board_kill_veto.png);
 }
 
-
 .card-selection {
     margin: 50px 0 0 0;
     position: relative;
@@ -279,7 +286,7 @@ body:before {
     width: 300px;
     background-color: rgba(0, 0, 0, 0.5);
     border-left: 3px solid black;
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
 }
 
@@ -299,18 +306,41 @@ body:before {
     bottom: 0;
     left: 0;
     z-index: 2000;
-    background-color: rgba(0, 0, 0, 0.7);
+    background: rgb(20,20,20);
+    background: linear-gradient(297deg, rgba(20,20,20,0.9) 0%, rgba(60,60,60,0.9) 100%);
 }
 
-.play-board .modal h1 {
-    font-size: 3vw;
+.play-board .modal h1,
+.chaos {
+    font-size: 3.5vw;
     line-height: 1.4;
-    margin: 50px 0;
+    margin: 4vw 0;
     text-align: center;
     text-transform: uppercase;
-    text-shadow: 0.1em 0.1em 0  black;
+    text-shadow: 0.08em 0.08em 0  black;
     font-family: 'Germania One', sans-serif;
     letter-spacing: 0.1em;
+}
+
+.chaos {
+    position: absolute;
+    top: 40vh;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: scale(0.2);
+    transition: opacity 0.3s, transform 0.3s;
+    -webkit-text-stroke: 0.02em black;
+    text-shadow: 0.04em 0.04em 0  black;
+    z-index: 10000;
+    margin: 0;
+    font-size: 8vw;
+    line-height: 20vh;
+}
+
+.chaos.show {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .play-board .modal p {
@@ -467,4 +497,166 @@ body:before {
 p.gameover-text {
     font-size: 24px;
     font-family: 'Germania One', sans-serif;
+}
+
+.gov {
+    display: flex;
+    flex-direction: row;
+    margin: 0 60px;
+}
+
+.gov > div {
+    text-align: center;
+}
+
+.gov img {
+    display: block;
+    width: 70%;
+    margin: 20px auto;
+    border-radius: 4px;
+    box-shadow: 1px 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.player-name {
+    background-color: black;
+    font-size: 3.6vw;
+    padding: 0.75vw 1.75vw;
+    display: inline-block;
+    border-radius: 8px;
+    font-family: 'Germania One', sans-serif;
+    margin: 40px 0;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+}
+
+.gov .player-name {
+    margin-top: -40px;
+    font-size: 2.8vw;
+}
+
+.turn-copy {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6vw;
+    text-align: center;
+    font-size: 2vw;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.vote-now {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6vw;
+    text-align: center;
+    font-size: 4vw;
+    font-family: 'Germania One', sans-serif;
+    transition: opacity 0.3s;
+    transform: scale(1);
+    text-transform: uppercase;
+    -webkit-text-stroke: 0.05em black;
+    text-shadow: 0 0 0.2em rgba(0, 0, 0, 0.3);
+    animation: growshrink 1s infinite;
+}
+
+.vote-now.hidden {
+    opacity: 0;
+    animation: none;
+}
+
+@keyframes growshrink {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.vote-result {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10000;
+}
+
+.vote-result > div {
+    font-size: 8vw;
+    font-family: 'Germania One', sans-serif;
+    padding: 1vw 3vw;
+    background-color: black;
+    box-shadow: 0 0 1vw rgba(0, 0, 0, 0.5);
+    border-radius: 0.5vw;
+    transform: rotate(-36deg) scale(6);
+    transition: transform 0.15s;
+}
+
+.vote-result.show > div {
+    transform: rotate(-12deg) scale(1);
+}
+
+.vote-result.show > div.nein {
+    transform: rotate(8deg) scale(1);
+}
+
+.vote-result.show > div.veto {
+    transform: rotate(-4deg) scale(1);
+}
+
+.vote-result > div.ja {
+    background-color: white;
+    color: black;
+}
+
+.vote-result > div.veto {
+    background-color: #822;
+    color: white;
+}
+
+.player-item {
+    position: relative;
+    margin: 8px 0;
+    padding: 9px 0 8px 12px;
+    font-size: 17px;
+    font-family: 'Germania One', sans-serif;
+    background-color: #822;
+    color: white;
+    text-shadow: 1px 1px 1px black;
+    transition: opacity 0.6s;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.player-item.dead {
+    background-color: #666;
+    opacity: 0.6;
+}
+
+.player-item .vote {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    bottom: 3px;
+    width: 50px;
+    transition: transform 0.4s;
+    line-height: 32px;
+    text-shadow: none;
+    border-radius: 2px;
+    text-align: center;
+}
+
+.player-item .vote.hidden {
+    transform: translateX(60px);
+}
+
+.player-item .vote.ja {
+    background-color: white;
+    color: black;
+}
+
+.player-item .vote.nein {
+    background-color: black;
+    color: white;
 }

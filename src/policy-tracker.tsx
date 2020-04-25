@@ -31,7 +31,7 @@ function PolicyTrackerCard(props: PolicyTrackerCardProps) {
         animStateRef.current = 1;
       }
       if (animStateRef.current < 2) {
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 1000));
         animStateRef.current = 2;
       }
       if (animStateRef.current < 3) {
@@ -72,9 +72,9 @@ interface PolicyTrackerProps {
 export function PolicyTracker(props: PolicyTrackerProps) {
   const { screen, party, numCards, reveal } = props;
   const scale = Math.min(
-    (screen.width - SIDEPANEL_WIDTH) / 1400,
+    (screen.width - SIDEPANEL_WIDTH) / 1200,
     screen.height / 800,
-    1
+    1.5
   );
   const maxNumCards = party == 'Liberal' ? 5 : 6;
   const width = scale * ((maxNumCards * 170) + 40);

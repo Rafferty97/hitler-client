@@ -1,5 +1,23 @@
 import * as React from 'react';
+import { animated, useSpring } from 'react-spring';
 import { Election, PublicPlayer, LegislativeSession, ExecutiveAction, EndGame } from './types';
+import { useDelay } from './util';
+import { VoteResult } from './vote-result';
+
+function PlayerName(props: { player: PublicPlayer, show: boolean }) {
+  const style = useSpring({
+    opacity: props.show ? 1 : 0,
+    transform: props.show ? 'translate(0px, 0px)' : 'translate(0px, 5vw)',
+    config: {
+      mass: 1,
+      tension: 340,
+      friction: 22
+    }
+  });
+  return <animated.div className="player-name" style={style}>
+    {props.player.name}
+  </animated.div>;
+}
 
 export function NightRoundModal() {
   return <>
@@ -11,19 +29,51 @@ export function NightRoundModal() {
 interface ElectionModalProps {
   election: Election;
   players: PublicPlayer[];
+  showResult: boolean;
+  done: () => any;
 }
 
 export function ElectionModal(props: ElectionModalProps) {
-  const { election, players } = props;
-  return <>
-    <h1>Election</h1>
+  const { election, players, showResult } = props;
+
+  const showPresident = useDelay(true, 1000);
+  const showChancellor = showPresident && election.chancellorElect != null;
+  const showVoting = useDelay(showChancellor, 1000) && election.voteResult == null;
+
+  React.useEffect(() => {
+    if (showResult) {
+      const timeout = setTimeout(props.done, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [showResult]);
+
+  /*
     <p>President: {players[election.presidentElect].name}</p>
     <p>Chancellor: {election.chancellorElect != null ? players[election.chancellorElect].name : 'Not chosen'}</p>
     {election.chancellorElect != null && (election.voteResult == null ? (
       <p>Voting in progress...</p>
     ) : (
       <p>Vote result: {election.voteResult ? 'JA!' : 'NEIN!'}</p>
-    ))}
+    ))}*/
+
+  return <>
+    <h1>Election</h1>
+    <div className="gov">
+      <div>
+        <img src="./img/president.png" />
+        <PlayerName
+          player={players[election.presidentElect]}
+          show={showPresident} />
+      </div>
+      <div>
+        <img src="./img/chancellor.png" />
+        <PlayerName
+          player={players[election.chancellorElect ?? 0]}
+          show={showChancellor} />
+      </div>
+    </div>
+    <div className={`vote-now${showVoting ? '' : ' hidden'}`}>Vote now!</div>
+    {showResult && <VoteResult result={election.voteResult ? 'ja' : 'nein'} />}
   </>;
 }
 
@@ -51,19 +101,33 @@ export function LegislativeModal(props: LegislativeModalProps) {
   }
   return <>
     <h1>Legislative Session</h1>
-    <p>President: {players[state.president].name}</p>
-    <p>Chancellor: {players[state.chancellor].name}</p>
-    <p>{turnCopy}</p>
+    <div className="gov">
+      <div>
+        <img src="./img/president.png" />
+        <PlayerName
+          player={players[state.president]}
+          show={true} />
+      </div>
+      <div>
+        <img src="./img/chancellor.png" />
+        <PlayerName
+          player={players[state.chancellor]}
+          show={true} />
+      </div>
+    </div>
+    <p className="turn-copy">{turnCopy}</p>
   </>;
 }
 
 interface ExecutiveModalProps {
   state: ExecutiveAction;
   players: PublicPlayer[];
+  done: () => any;
 }
 
 export function ExecutiveModal(props: ExecutiveModalProps) {
   const { state, players } = props;
+
   let copy;
   switch(props.state.action) {
     case 'execution':
@@ -79,12 +143,20 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
       copy = 'A special election has been called. The president must now nominate his successor.';
       break;
   }
+
+  React.useEffect(() => {
+    if (state.playerChosen != null) {
+      const timeout = setTimeout(props.done, 2500);
+      return () => clearTimeout(timeout);
+    }
+  }, [state.playerChosen]);
+
   return <>
     <h1>Executive Action</h1>
     <p>{copy}</p>
-    {state.playerChosen != null && (
-      <p>Player chosen: {players[state.playerChosen].name}</p>
-    )}
+    <div style={{ textAlign: 'center' }}>
+      <PlayerName player={players[state.playerChosen ?? 0]} show={state.playerChosen != null} />
+    </div>
   </>;
 }
 

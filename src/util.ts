@@ -32,3 +32,31 @@ export function getQueryVariable(variable) {
       }
   }
 }
+
+export function useDelay(trigger: boolean, delay: number): boolean {
+  const [triggered, setTriggered] = useState(false);
+  useEffect(() => {
+    if (trigger) {
+      const timeout = setTimeout(() => setTriggered(true), delay);
+      return () => clearTimeout(timeout);
+    } else {
+      setTriggered(false);
+      return () => {};
+    }
+  }, [trigger]);
+  return triggered;
+}
+
+export function useLatch<T>(value: T | null, delay: number): T {
+  const [out, setValue] = useState(value);
+  useEffect(() => {
+    if (value === null) {
+      const timeout = setTimeout(() => setValue(null), delay);
+      return () => clearTimeout(timeout);
+    } else {
+      setValue(value);
+      return () => {};
+    }
+  }, [value]);
+  return out;
+}

@@ -90,6 +90,7 @@ export type PlayerAction
   | PolicyPeakAction
   | InvestigatePartyAction
   | VetoConsentAction
+  | NextRoundAction
   | GameOverAction;
 
 interface LobbyAction {
@@ -135,6 +136,10 @@ interface InvestigatePartyAction {
 interface VetoConsentAction {
   type: 'vetoConsent';
   chancellor: number;
+}
+
+interface NextRoundAction {
+  type: 'nextRound';
 }
 
 interface GameOverAction {
