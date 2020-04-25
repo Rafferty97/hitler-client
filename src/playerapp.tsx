@@ -281,6 +281,7 @@ export function PlayerApp() {
   return <div>
     <div className={`connection${connected ? ' on' : ''}`}>
       {connected ? 'Connected' : 'Offline'}
+      <a href="/hitler" className="home">HOME</a>
       <div className="gameid">{joinGameMsg?.gameId}</div>
     </div>
     <div className={`controls ${controlsClass}`}>{controls}</div>

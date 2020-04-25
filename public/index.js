@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://192.168.1.13:8888/" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2282,6 +2282,7 @@ var main = (function (exports, React, reactDom) {
         return React.createElement("div", null,
             React.createElement("div", { className: "connection" + (connected ? ' on' : '') },
                 connected ? 'Connected' : 'Offline',
+                React.createElement("a", { href: "/hitler", className: "home" }, "HOME"),
                 React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
             React.createElement("div", { className: "controls " + controlsClass }, controls),
             state && React.createElement("div", { className: "secret-role" },
@@ -2581,7 +2582,10 @@ var main = (function (exports, React, reactDom) {
         }
         return state.type;
     }
-    var drumrollSound = new Audio('./sound/drumroll.mp3');
+    var backgroundMusic = new Audio('./sound/moonlight.mp3');
+    backgroundMusic.volume = 0.7;
+    backgroundMusic.loop = true;
+    var drumrollSound = new Audio('./sound/drum roll final.mp3');
     var staySilentSound = new Audio('./sound/remain-silent.mp3');
     function PlayBoard(props) {
         var screen = useWindowSize();
@@ -2606,10 +2610,14 @@ var main = (function (exports, React, reactDom) {
         };
         var showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
         var showChaos = props.state.type == 'cardReveal' && props.state.chaos;
+        useSound(backgroundMusic, true);
         useSound(drumrollSound, props.state.type == 'cardReveal');
         useSound(staySilentSound, props.state.type == 'legislativeSession');
         var electionTracker = props.electionTracker;
         if (props.state.type == 'election' && showResult && props.state.voteResult === false) {
+            electionTracker++;
+        }
+        if (props.state.type == 'cardReveal' && props.state.card == 'Veto') {
             electionTracker++;
         }
         return (React.createElement("div", { className: "play-board" },

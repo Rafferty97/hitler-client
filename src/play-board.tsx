@@ -49,7 +49,10 @@ function mapModalKey(state: GameState) {
   return state.type;
 }
 
-const drumrollSound = new Audio('./sound/drumroll.mp3');
+const backgroundMusic = new Audio('./sound/moonlight.mp3');
+backgroundMusic.volume = 0.7;
+backgroundMusic.loop = true;
+const drumrollSound = new Audio('./sound/drum roll final.mp3');
 const staySilentSound = new Audio('./sound/remain-silent.mp3');
 
 export function PlayBoard(props: PlayBoardProps) {
@@ -80,11 +83,15 @@ export function PlayBoard(props: PlayBoardProps) {
   const showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
   const showChaos = props.state.type == 'cardReveal' && props.state.chaos;
 
+  useSound(backgroundMusic, true);
   useSound(drumrollSound, props.state.type == 'cardReveal');
   useSound(staySilentSound, props.state.type == 'legislativeSession');
 
   let electionTracker = props.electionTracker;
   if (props.state.type == 'election' && showResult && props.state.voteResult === false) {
+    electionTracker++;
+  }
+  if (props.state.type == 'cardReveal' && props.state.card == 'Veto') {
     electionTracker++;
   }
 
