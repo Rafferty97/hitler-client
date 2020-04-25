@@ -261,6 +261,7 @@ export function PlayerApp() {
             return <div>
               <p className="gameover-text">The {action.winner}s win!</p>
               <button className="btn okay" onClick={() => sendAction('restart')}>Restart</button>
+              <div style={{ height: 10 }} />
               <button className="btn okay" onClick={() => sendAction('end')}>End Game</button>
             </div>;
           default:

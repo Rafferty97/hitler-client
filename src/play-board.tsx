@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useWindowSize, useDelay, useLatch } from './util';
+import { useWindowSize, useDelay, useLatch, useSound } from './util';
 import { PolicyTracker } from './policy-tracker';
 import { GameState, PublicPlayer, Party } from './types';
 import { NightRoundModal, ElectionModal, LegislativeModal, ExecutiveModal, GameOverModal } from './modals';
@@ -49,6 +49,9 @@ function mapModalKey(state: GameState) {
   return state.type;
 }
 
+const drumrollSound = new Audio('./sound/drumroll.mp3');
+const staySilentSound = new Audio('./sound/remain-silent.mp3');
+
 export function PlayBoard(props: PlayBoardProps) {
   const screen = useWindowSize();
 
@@ -76,6 +79,9 @@ export function PlayBoard(props: PlayBoardProps) {
 
   const showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
   const showChaos = props.state.type == 'cardReveal' && props.state.chaos;
+
+  useSound(drumrollSound, props.state.type == 'cardReveal');
+  useSound(staySilentSound, props.state.type == 'legislativeSession');
 
   let electionTracker = props.electionTracker;
   if (props.state.type == 'election' && showResult && props.state.voteResult === false) {

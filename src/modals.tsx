@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { animated, useSpring } from 'react-spring';
 import { Election, PublicPlayer, LegislativeSession, ExecutiveAction, EndGame } from './types';
-import { useDelay } from './util';
+import { useDelay, useSound } from './util';
 import { VoteResult } from './vote-result';
 
 function PlayerName(props: { player: PublicPlayer, show: boolean }) {
@@ -35,6 +35,7 @@ interface ElectionModalProps {
 
 const jaSound = new Audio('./sound/ja.mp3');
 const neinSound = new Audio('./sound/nein.mp3');
+const voteNowSound = new Audio('./sound/cast-vote.mp3');
 
 export function ElectionModal(props: ElectionModalProps) {
   const { election, players, showResult } = props;
@@ -46,24 +47,12 @@ export function ElectionModal(props: ElectionModalProps) {
   React.useEffect(() => {
     if (showResult) {
       const timeout = setTimeout(props.done, 4000);
-      const sound = election.voteResult ? jaSound : neinSound;
-      sound.play();
-      return () => {
-        clearTimeout(timeout);
-        sound.pause();
-        sound.currentTime = 0;
-      };
+      return () => clearTimeout(timeout);
     }
   }, [showResult]);
 
-  /*
-    <p>President: {players[election.presidentElect].name}</p>
-    <p>Chancellor: {election.chancellorElect != null ? players[election.chancellorElect].name : 'Not chosen'}</p>
-    {election.chancellorElect != null && (election.voteResult == null ? (
-      <p>Voting in progress...</p>
-    ) : (
-      <p>Vote result: {election.voteResult ? 'JA!' : 'NEIN!'}</p>
-    ))}*/
+  useSound(election.voteResult ? jaSound : neinSound, showResult);
+  useSound(voteNowSound, showVoting);
 
   return <>
     <h1>Election</h1>

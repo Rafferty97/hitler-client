@@ -60,3 +60,15 @@ export function useLatch<T>(value: T | null, delay: number): T {
   }, [value]);
   return out;
 }
+
+export function useSound(sound: HTMLAudioElement, play: boolean) {
+  useEffect(() => {
+    if (play) {
+      sound.play();
+      return () => {
+        sound.pause();
+        sound.currentTime = 0;
+      }
+    }
+  }, [sound, play]);
+}

@@ -199,6 +199,17 @@ var main = (function (exports, React, reactDom) {
         }, [trigger]);
         return triggered;
     }
+    function useSound(sound, play) {
+        React.useEffect(function () {
+            if (play) {
+                sound.play();
+                return function () {
+                    sound.pause();
+                    sound.currentTime = 0;
+                };
+            }
+        }, [sound, play]);
+    }
 
     function _extends() {
       _extends = Object.assign || function (target) {
@@ -2252,6 +2263,7 @@ var main = (function (exports, React, reactDom) {
                                     action.winner,
                                     "s win!"),
                                 React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('restart'); } }, "Restart"),
+                                React.createElement("div", { style: { height: 10 } }),
                                 React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('end'); } }, "End Game"));
                         default:
                             if (state.isDead) {
@@ -2408,6 +2420,7 @@ var main = (function (exports, React, reactDom) {
     }
     var jaSound = new Audio('./sound/ja.mp3');
     var neinSound = new Audio('./sound/nein.mp3');
+    var voteNowSound = new Audio('./sound/cast-vote.mp3');
     function ElectionModal(props) {
         var _a;
         var election = props.election, players = props.players, showResult = props.showResult;
@@ -2417,23 +2430,11 @@ var main = (function (exports, React, reactDom) {
         React.useEffect(function () {
             if (showResult) {
                 var timeout_1 = setTimeout(props.done, 4000);
-                var sound_1 = election.voteResult ? jaSound : neinSound;
-                sound_1.play();
-                return function () {
-                    clearTimeout(timeout_1);
-                    sound_1.pause();
-                    sound_1.currentTime = 0;
-                };
+                return function () { return clearTimeout(timeout_1); };
             }
         }, [showResult]);
-        /*
-          <p>President: {players[election.presidentElect].name}</p>
-          <p>Chancellor: {election.chancellorElect != null ? players[election.chancellorElect].name : 'Not chosen'}</p>
-          {election.chancellorElect != null && (election.voteResult == null ? (
-            <p>Voting in progress...</p>
-          ) : (
-            <p>Vote result: {election.voteResult ? 'JA!' : 'NEIN!'}</p>
-          ))}*/
+        useSound(election.voteResult ? jaSound : neinSound, showResult);
+        useSound(voteNowSound, showVoting);
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Election"),
             React.createElement("div", { className: "gov" },
@@ -2580,6 +2581,8 @@ var main = (function (exports, React, reactDom) {
         }
         return state.type;
     }
+    var drumrollSound = new Audio('./sound/drumroll.mp3');
+    var staySilentSound = new Audio('./sound/remain-silent.mp3');
     function PlayBoard(props) {
         var screen = useWindowSize();
         var gameStarted = ['lobby', 'nightRound'].indexOf(props.state.type) == -1;
@@ -2603,6 +2606,8 @@ var main = (function (exports, React, reactDom) {
         };
         var showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
         var showChaos = props.state.type == 'cardReveal' && props.state.chaos;
+        useSound(drumrollSound, props.state.type == 'cardReveal');
+        useSound(staySilentSound, props.state.type == 'legislativeSession');
         var electionTracker = props.electionTracker;
         if (props.state.type == 'election' && showResult && props.state.voteResult === false) {
             electionTracker++;
