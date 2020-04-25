@@ -112,11 +112,11 @@ export function PolicyTracker(props: PolicyTrackerProps) {
         break;
       case 7:
       case 8:
-        tiles = ['', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+        tiles = ['', 'investigate', 'election', 'kill', 'kill-veto', 'fascist-win'];
         break;
       case 9:
       case 10:
-        tiles = ['investigate', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+        tiles = ['investigate', 'investigate', 'election', 'kill', 'kill-veto', 'fascist-win'];
         break;
     }
   }

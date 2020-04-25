@@ -253,6 +253,10 @@ body:before {
     background-image: url(./img/board_investigate.png);
 }
 
+.board-tile.election {
+    background-image: url(./img/board_election.png);
+}
+
 .board-tile.policy-peak {
     background-image: url(./img/board_policy_peak.png);
 }

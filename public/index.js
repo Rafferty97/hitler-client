@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://localhost:8888" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2380,11 +2380,11 @@ var main = (function (exports, React, reactDom) {
                     break;
                 case 7:
                 case 8:
-                    tiles = ['', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+                    tiles = ['', 'investigate', 'election', 'kill', 'kill-veto', 'fascist-win'];
                     break;
                 case 9:
                 case 10:
-                    tiles = ['investigate', 'investigate', 'investigate', 'kill', 'kill-veto', 'fascist-win'];
+                    tiles = ['investigate', 'investigate', 'election', 'kill', 'kill-veto', 'fascist-win'];
                     break;
             }
         }
