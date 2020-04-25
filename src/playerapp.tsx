@@ -136,8 +136,14 @@ export function PlayerApp() {
         setError(null);
         break;
       case 'error':
-        setError(msg.error);
-        throw new Error(msg.error);
+        if (msg.error == 'Game does not exist.') {
+          setState(null);
+          setJoinGameMsg(null);
+          window.history.pushState('', '', `?m=p`);
+        } else {
+          setError(msg.error);
+          throw new Error(msg.error);
+        }
       default:
         throw new Error('Unknown message from server: ' + msg.type);
     }
@@ -255,6 +261,7 @@ export function PlayerApp() {
             return <div>
               <p className="gameover-text">The {action.winner}s win!</p>
               <button className="btn okay" onClick={() => sendAction('restart')}>Restart</button>
+              <button className="btn okay" onClick={() => sendAction('end')}>End Game</button>
             </div>;
           default:
             if (state.isDead) {

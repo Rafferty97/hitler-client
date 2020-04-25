@@ -21,8 +21,8 @@ export function App() {
   }
 
   const setMode = mode => {
-    window.history.pushState('', '', '?m=' + mode.substr(0, 1));
     setState(mode);
+    window.history.pushState('', '', '?m=' + mode.substr(0, 1));
   };
 
   return <div className="controls vcentre">

@@ -25,6 +25,7 @@ function PlayerItem(props: { player: PublicPlayer, vote: boolean | null }) {
 
   return <div className={`player-item${player.isDead ? ' dead' : ''}`}>
     {player.name}
+    {player.isConfirmedNotHitler && <div className="not-hitler">Not Hitler!</div>}
     <div className={`vote${vote.show ? '' : ' hidden'} ${vote.vote ? 'ja' : 'nein'}`}>
       {vote.vote ? 'JA!' : 'NEIN!'}
     </div>
@@ -97,27 +98,26 @@ export function PlayBoard(props: PlayBoardProps) {
         {modalTransitions.map(({ item, key, props: style }) => {
           let modal;
           if (item.type == 'nightRound') {
-            modal = <NightRoundModal key="night" />;
+            modal = <NightRoundModal />;
           }
           if (item.type == 'election') {
             modal = <ElectionModal
-              key={key}
               election={item}
               players={props.players}
               showResult={showResult}
               done={props.done} />;
           }
           if (item.type == 'legislativeSession') {
-            modal = <LegislativeModal key="legislative" state={item} players={props.players} />;
+            modal = <LegislativeModal state={item} players={props.players} />;
           }
           if (item.type == 'executiveAction') {
-            modal = <ExecutiveModal key="executive" state={item} players={props.players} done={props.done} />;
+            modal = <ExecutiveModal state={item} players={props.players} done={props.done} />;
           }
           if (item.type == 'end') {
-            modal = <GameOverModal key="gameover" state={item} players={props.players} />;
+            modal = <GameOverModal state={item} players={props.players} />;
           }
           return modal ? (
-            <animated.div className="modal" style={style}>{modal}</animated.div>
+            <animated.div key={key} className="modal" style={style}>{modal}</animated.div>
           ) : null;
         })}
       </div>

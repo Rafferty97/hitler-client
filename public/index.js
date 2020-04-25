@@ -2141,8 +2141,15 @@ var main = (function (exports, React, reactDom) {
                     setError(null);
                     break;
                 case 'error':
-                    setError(msg.error);
-                    throw new Error(msg.error);
+                    if (msg.error == 'Game does not exist.') {
+                        setState(null);
+                        setJoinGameMsg(null);
+                        window.history.pushState('', '', "?m=p");
+                    }
+                    else {
+                        setError(msg.error);
+                        throw new Error(msg.error);
+                    }
                 default:
                     throw new Error('Unknown message from server: ' + msg.type);
             }
@@ -2244,7 +2251,8 @@ var main = (function (exports, React, reactDom) {
                                     "The ",
                                     action.winner,
                                     "s win!"),
-                                React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('restart'); } }, "Restart"));
+                                React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('restart'); } }, "Restart"),
+                                React.createElement("button", { className: "btn okay", onClick: function () { return sendAction('end'); } }, "End Game"));
                         default:
                             if (state.isDead) {
                                 return React.createElement("p", null, "Sorry, you're dead :(");
@@ -2372,18 +2380,10 @@ var main = (function (exports, React, reactDom) {
             cards);
     }
 
-    var neinSound = new Audio('./sound/nein.mp3');
     function VoteResult(props) {
         var _a = React.useState(false), started = _a[0], setStarted = _a[1];
         React.useEffect(function () {
-            setTimeout(function () {
-                setStarted(true);
-                switch (props.result) {
-                    case 'nein':
-                        neinSound.play();
-                        break;
-                }
-            }, 5);
+            setTimeout(function () { return setStarted(true); }, 5);
         }, []);
         return React.createElement("div", { className: "vote-result" + (started ? ' show' : '') },
             React.createElement("div", { className: props.result }, props.result.toUpperCase() + '!'));
@@ -2406,6 +2406,8 @@ var main = (function (exports, React, reactDom) {
             React.createElement("h1", null, "Night Round"),
             React.createElement("p", null, "You have now been given your secret role."));
     }
+    var jaSound = new Audio('./sound/ja.mp3');
+    var neinSound = new Audio('./sound/nein.mp3');
     function ElectionModal(props) {
         var _a;
         var election = props.election, players = props.players, showResult = props.showResult;
@@ -2415,7 +2417,13 @@ var main = (function (exports, React, reactDom) {
         React.useEffect(function () {
             if (showResult) {
                 var timeout_1 = setTimeout(props.done, 4000);
-                return function () { return clearTimeout(timeout_1); };
+                var sound_1 = election.voteResult ? jaSound : neinSound;
+                sound_1.play();
+                return function () {
+                    clearTimeout(timeout_1);
+                    sound_1.pause();
+                    sound_1.currentTime = 0;
+                };
             }
         }, [showResult]);
         /*
@@ -2498,12 +2506,38 @@ var main = (function (exports, React, reactDom) {
     }
     function GameOverModal(props) {
         var state = props.state, players = props.players;
+        var copy;
+        switch (state.winType) {
+            case 'legislative':
+                switch (state.winner) {
+                    case 'Liberal':
+                        copy = 'The liberals have completed their policy track';
+                        break;
+                    case 'Fascist':
+                        copy = 'The fascists have completed their policy track';
+                        break;
+                }
+                break;
+            case 'hitler':
+                switch (state.winner) {
+                    case 'Liberal':
+                        copy = 'Hitler has been assassinated';
+                        break;
+                    case 'Fascist':
+                        copy = 'Hitler has been elected chancellor';
+                        break;
+                }
+                break;
+        }
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Game Over"),
-            React.createElement("p", null,
-                state.winType,
-                " win for ",
-                state.winner));
+            React.createElement("p", { className: "gameover1" },
+                "The ",
+                state.winner,
+                "s win!"),
+            React.createElement("p", { className: "gameover2" },
+                copy,
+                "."));
     }
 
     function ElectionTracker(props) {
@@ -2537,6 +2571,7 @@ var main = (function (exports, React, reactDom) {
         }, [vote_]);
         return React.createElement("div", { className: "player-item" + (player.isDead ? ' dead' : '') },
             player.name,
+            player.isConfirmedNotHitler && React.createElement("div", { className: "not-hitler" }, "Not Hitler!"),
             React.createElement("div", { className: "vote" + (vote.show ? '' : ' hidden') + " " + (vote.vote ? 'ja' : 'nein') }, vote.vote ? 'JA!' : 'NEIN!'));
     }
     function mapModalKey(state) {
@@ -2584,21 +2619,21 @@ var main = (function (exports, React, reactDom) {
                 var item = _a.item, key = _a.key, style = _a.props;
                 var modal;
                 if (item.type == 'nightRound') {
-                    modal = React.createElement(NightRoundModal, { key: "night" });
+                    modal = React.createElement(NightRoundModal, null);
                 }
                 if (item.type == 'election') {
-                    modal = React.createElement(ElectionModal, { key: key, election: item, players: props.players, showResult: showResult, done: props.done });
+                    modal = React.createElement(ElectionModal, { election: item, players: props.players, showResult: showResult, done: props.done });
                 }
                 if (item.type == 'legislativeSession') {
-                    modal = React.createElement(LegislativeModal, { key: "legislative", state: item, players: props.players });
+                    modal = React.createElement(LegislativeModal, { state: item, players: props.players });
                 }
                 if (item.type == 'executiveAction') {
-                    modal = React.createElement(ExecutiveModal, { key: "executive", state: item, players: props.players, done: props.done });
+                    modal = React.createElement(ExecutiveModal, { state: item, players: props.players, done: props.done });
                 }
                 if (item.type == 'end') {
-                    modal = React.createElement(GameOverModal, { key: "gameover", state: item, players: props.players });
+                    modal = React.createElement(GameOverModal, { state: item, players: props.players });
                 }
-                return modal ? (React.createElement(extendedAnimated.div, { className: "modal", style: style }, modal)) : null;
+                return modal ? (React.createElement(extendedAnimated.div, { key: key, className: "modal", style: style }, modal)) : null;
             })),
             showVeto && React.createElement(VoteResult, { result: "veto" }),
             React.createElement("h1", { className: "chaos" + (showChaos ? ' show' : '') }, "Chaos!")));
@@ -2638,8 +2673,15 @@ var main = (function (exports, React, reactDom) {
                     setError(null);
                     break;
                 case 'error':
-                    setError(msg.error);
-                    throw new Error(msg.error);
+                    if (msg.error == 'Game does not exist.') {
+                        setState(null);
+                        setJoinGameMsg(null);
+                        window.history.pushState('', '', "?m=b");
+                    }
+                    else {
+                        setError(msg.error);
+                        throw new Error(msg.error);
+                    }
                 default:
                     throw new Error('Unknown message from server: ' + msg.type);
             }
@@ -2695,8 +2737,8 @@ var main = (function (exports, React, reactDom) {
             return React.createElement(BoardApp, null);
         }
         var setMode = function (mode) {
-            window.history.pushState('', '', '?m=' + mode.substr(0, 1));
             setState(mode);
+            window.history.pushState('', '', '?m=' + mode.substr(0, 1));
         };
         return React.createElement("div", { className: "controls vcentre" },
             React.createElement("div", { className: "form-row" },

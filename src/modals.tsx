@@ -33,6 +33,9 @@ interface ElectionModalProps {
   done: () => any;
 }
 
+const jaSound = new Audio('./sound/ja.mp3');
+const neinSound = new Audio('./sound/nein.mp3');
+
 export function ElectionModal(props: ElectionModalProps) {
   const { election, players, showResult } = props;
 
@@ -43,7 +46,13 @@ export function ElectionModal(props: ElectionModalProps) {
   React.useEffect(() => {
     if (showResult) {
       const timeout = setTimeout(props.done, 4000);
-      return () => clearTimeout(timeout);
+      const sound = election.voteResult ? jaSound : neinSound;
+      sound.play();
+      return () => {
+        clearTimeout(timeout);
+        sound.pause();
+        sound.currentTime = 0;
+      };
     }
   }, [showResult]);
 
@@ -167,8 +176,26 @@ interface GameOverModalProps {
 
 export function GameOverModal(props: GameOverModalProps) {
   const { state, players } = props;
+
+  let copy;
+  switch (state.winType) {
+    case 'legislative':
+      switch (state.winner) {
+        case 'Liberal': copy = 'The liberals have completed their policy track'; break;
+        case 'Fascist': copy = 'The fascists have completed their policy track'; break;
+      }
+      break;
+    case 'hitler':
+      switch (state.winner) {
+        case 'Liberal': copy = 'Hitler has been assassinated'; break;
+        case 'Fascist': copy = 'Hitler has been elected chancellor'; break;
+      }
+      break;
+  }
+
   return <>
     <h1>Game Over</h1>
-    <p>{state.winType} win for {state.winner}</p>
+    <p className="gameover1">The {state.winner}s win!</p>
+    <p className="gameover2">{copy}.</p>
   </>;
 }

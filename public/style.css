@@ -638,6 +638,14 @@ p.gameover-text {
     opacity: 0.6;
 }
 
+.player-item .not-hitler {
+    position: absolute;
+    top: 9px;
+    right: 12px;
+    color: #fcb;
+    text-transform: uppercase;
+}
+
 .player-item .vote {
     position: absolute;
     top: 3px;
@@ -729,4 +737,17 @@ p.gameover-text {
     border-radius: 15px;
     box-sizing: border-box;
     border: 2px solid #400;
+}
+
+.modal p.gameover1 {
+    margin-top: 15vh;
+    font-size: 2.75vw;
+    font-family: 'Germania One', sans-serif;
+    text-transform: uppercase;
+    text-shadow: 0.1em 0.1em 0 black;
+}
+
+.modal p.gameover2 {
+    font-size: 1.75vw;
+    text-shadow: 0.1em 0.1em 0 black;
 }

@@ -37,8 +37,14 @@ export function BoardApp() {
         setError(null);
         break;
       case 'error':
-        setError(msg.error);
-        throw new Error(msg.error);
+        if (msg.error == 'Game does not exist.') {
+          setState(null);
+          setJoinGameMsg(null);
+          window.history.pushState('', '', `?m=b`);
+        } else {
+          setError(msg.error);
+          throw new Error(msg.error);
+        }
       default:
         throw new Error('Unknown message from server: ' + msg.type);
     }
