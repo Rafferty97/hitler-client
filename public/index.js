@@ -29,45 +29,7 @@ var main = (function (exports, React, reactDom) {
         return __assign.apply(this, arguments);
     };
 
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
-
-    function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-        function verb(n) { return function (v) { return step([n, v]); }; }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [op[0] & 2, t.value];
-                switch (op[0]) {
-                    case 0: case 1: t = op; break;
-                    case 4: _.label++; return { value: op[1], done: false };
-                    case 5: _.label++; y = op[1]; op = [0]; continue;
-                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop(); continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    }
-
-    var WS_URL = "ws://localhost:8888" ;
+    var WS_URL = "ws://192.168.1.13:8888" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2298,48 +2260,29 @@ var main = (function (exports, React, reactDom) {
     }
 
     var SIDEPANEL_WIDTH = 300;
+    var drumrollSound = new Audio('./sound/drum roll final.mp3');
+    var fascistSound = new Audio('./sound/fascist card.mp3');
+    var liberalSound = new Audio('./sound/liberal card.mp3');
     function PolicyTrackerCard(props) {
-        var _this = this;
-        var animStateRef = React.useRef(props.reveal ? 0 : 3);
-        var _a = useSpring({
-            from: {
-                y: props.reveal ? 150 : 0,
-                xy: props.reveal ? 0 : 1,
-                rot: props.reveal ? 180 : 0,
-                scale: (props.reveal ? props.startWidth : props.width) / 200
-            },
-            to: function (next, cancel) { return __awaiter(_this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (!(animStateRef.current < 1)) return [3 /*break*/, 2];
-                            return [4 /*yield*/, next({ y: 50, xy: 0, rot: 180, scale: props.startWidth / 200 })];
-                        case 1:
-                            _a.sent();
-                            animStateRef.current = 1;
-                            _a.label = 2;
-                        case 2:
-                            if (!(animStateRef.current < 2)) return [3 /*break*/, 4];
-                            return [4 /*yield*/, new Promise(function (r) { return setTimeout(r, 1000); })];
-                        case 3:
-                            _a.sent();
-                            animStateRef.current = 2;
-                            _a.label = 4;
-                        case 4:
-                            if (!(animStateRef.current < 3)) return [3 /*break*/, 6];
-                            return [4 /*yield*/, next({ y: 50, xy: 0, rot: 0, scale: props.startWidth / 200 })];
-                        case 5:
-                            _a.sent();
-                            animStateRef.current = 3;
-                            _a.label = 6;
-                        case 6: return [4 /*yield*/, next({ y: 0, xy: 1, scale: props.width / 200 })];
-                        case 7:
-                            _a.sent();
-                            return [2 /*return*/];
-                    }
-                });
-            }); }
-        }), y = _a.y, xy = _a.xy, scale = _a.scale, rot = _a.rot;
+        //const animStateRef = React.useRef(props.reveal ? 0 : 3);
+        var step1 = useDelay(props.reveal, 900);
+        var step2 = useDelay(step1, 1700);
+        var step3 = useDelay(step2, 1500);
+        var to = { y: 150, xy: 0, rot: 180, scale: props.startWidth / 200 };
+        if (step1 || !props.reveal) {
+            to.y = 50;
+        }
+        if (step2 || !props.reveal) {
+            to.rot = 0;
+        }
+        if (step3 || !props.reveal) {
+            to.y = 0;
+            to.xy = 1;
+            to.scale = props.width / 200;
+        }
+        useSound(drumrollSound, props.reveal);
+        useSound(props.party == 'Liberal' ? liberalSound : fascistSound, step2 && props.reveal);
+        var _a = useSpring(to), y = _a.y, xy = _a.xy, scale = _a.scale, rot = _a.rot;
         return (React.createElement(extendedAnimated.div, { style: {
                 position: 'absolute',
                 top: -112,
@@ -2359,7 +2302,7 @@ var main = (function (exports, React, reactDom) {
         var top = scale * (party == 'Liberal' ? 200 : 550);
         var cards = [];
         for (var i = 0; i < numCards + (reveal ? 1 : 0); i++) {
-            cards.push(React.createElement(PolicyTrackerCard, { party: party, x: scale * 170 * (i - 0.5 * (maxNumCards - 1)) - (0.5 * SIDEPANEL_WIDTH), y: top, width: 200 * scale, startWidth: 500 * scale, reveal: reveal && i == numCards }));
+            cards.push(React.createElement(PolicyTrackerCard, { key: i, party: party, x: scale * 170 * (i - 0.5 * (maxNumCards - 1)) - (0.5 * SIDEPANEL_WIDTH), y: top, width: 200 * scale, startWidth: 500 * scale, reveal: reveal && i == numCards }));
         }
         var boardStyles = {
             top: top,
@@ -2420,8 +2363,17 @@ var main = (function (exports, React, reactDom) {
             React.createElement("p", null, "You have now been given your secret role."));
     }
     var jaSound = new Audio('./sound/ja.mp3');
-    var neinSound = new Audio('./sound/nein.mp3');
+    var neinSound = new Audio('./sound/nein1.mp3');
+    var neinSound2 = new Audio('./sound/neinneinnein.mp3');
     var voteNowSound = new Audio('./sound/cast-vote.mp3');
+    function getNeinSound() {
+        if (Math.random() < 0.25) {
+            return neinSound2;
+        }
+        else {
+            return neinSound;
+        }
+    }
     function ElectionModal(props) {
         var _a;
         var election = props.election, players = props.players, showResult = props.showResult;
@@ -2434,7 +2386,7 @@ var main = (function (exports, React, reactDom) {
                 return function () { return clearTimeout(timeout_1); };
             }
         }, [showResult]);
-        useSound(election.voteResult ? jaSound : neinSound, showResult);
+        useSound(election.voteResult ? jaSound : getNeinSound(), showResult);
         useSound(voteNowSound, showVoting);
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Election"),
@@ -2485,18 +2437,18 @@ var main = (function (exports, React, reactDom) {
                 copy = 'The president must now execute a player.';
                 break;
             case 'investigate':
-                copy = 'The president may now investigate a players loyalty.';
+                copy = 'The president may now investigate a player\'s loyalty.';
                 break;
             case 'policyPeak':
                 copy = 'The president may now peek at the top three policy cards.';
                 break;
             case 'specialElection':
-                copy = 'A special election has been called. The president must now nominate his successor.';
+                copy = 'A special election has been called. The president must now nominate their successor.';
                 break;
         }
         React.useEffect(function () {
             if (state.playerChosen != null && props.state.action != 'investigate') {
-                var timeout_2 = setTimeout(props.done, 2500);
+                var timeout_2 = setTimeout(props.done, 5000);
                 return function () { return clearTimeout(timeout_2); };
             }
         }, [state.playerChosen]);
@@ -2585,8 +2537,16 @@ var main = (function (exports, React, reactDom) {
     var backgroundMusic = new Audio('./sound/moonlight.mp3');
     backgroundMusic.volume = 0.7;
     backgroundMusic.loop = true;
-    var drumrollSound = new Audio('./sound/drum roll final.mp3');
+    var tensionMusic = new Audio('./sound/tension.mp3');
+    tensionMusic.volume = 0.5;
+    tensionMusic.loop = true;
     var staySilentSound = new Audio('./sound/remain-silent.mp3');
+    var electChancellorSound = new Audio('./sound/elect a chancellor.mp3');
+    var executePlayerSound = new Audio('./sound/execute player.mp3');
+    var playerDeathSound = new Audio('./sound/player death.mp3');
+    var investigateSound = new Audio('./sound/investigate loyalty.mp3');
+    var policyPeekSound = new Audio('./sound/look at 3 policy cards.mp3');
+    var secretRoleSound = new Audio('./sound/secret role.mp3');
     function PlayBoard(props) {
         var screen = useWindowSize();
         var gameStarted = ['lobby', 'nightRound'].indexOf(props.state.type) == -1;
@@ -2610,9 +2570,17 @@ var main = (function (exports, React, reactDom) {
         };
         var showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
         var showChaos = props.state.type == 'cardReveal' && props.state.chaos;
-        useSound(backgroundMusic, true);
-        useSound(drumrollSound, props.state.type == 'cardReveal');
-        useSound(staySilentSound, props.state.type == 'legislativeSession');
+        var cardRevealOver = useDelay(props.state.type == 'cardReveal', 3800);
+        var t = props.state.type;
+        useSound(backgroundMusic, t != 'legislativeSession' && (t != 'cardReveal' || cardRevealOver));
+        useSound(tensionMusic, t == 'legislativeSession');
+        useSound(staySilentSound, t == 'legislativeSession');
+        useSound(electChancellorSound, props.state.type == 'election' && props.state.chancellorElect == undefined);
+        useSound(executePlayerSound, props.state.type == 'executiveAction' && props.state.action == 'execution');
+        useSound(playerDeathSound, props.state.type == 'executiveAction' && props.state.action == 'execution' && props.state.playerChosen != null);
+        useSound(investigateSound, props.state.type == 'executiveAction' && props.state.action == 'investigate');
+        useSound(policyPeekSound, props.state.type == 'executiveAction' && props.state.action == 'policyPeak');
+        useSound(secretRoleSound, props.state.type == 'nightRound');
         var electionTracker = props.electionTracker;
         if (props.state.type == 'election' && showResult && props.state.voteResult === false) {
             electionTracker++;

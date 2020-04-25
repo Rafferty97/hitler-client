@@ -52,8 +52,16 @@ function mapModalKey(state: GameState) {
 const backgroundMusic = new Audio('./sound/moonlight.mp3');
 backgroundMusic.volume = 0.7;
 backgroundMusic.loop = true;
-const drumrollSound = new Audio('./sound/drum roll final.mp3');
+const tensionMusic = new Audio('./sound/tension.mp3');
+tensionMusic.volume = 0.5;
+tensionMusic.loop = true;
 const staySilentSound = new Audio('./sound/remain-silent.mp3');
+const electChancellorSound = new Audio('./sound/elect a chancellor.mp3');
+const executePlayerSound = new Audio('./sound/execute player.mp3');
+const playerDeathSound = new Audio('./sound/player death.mp3');
+const investigateSound = new Audio('./sound/investigate loyalty.mp3');
+const policyPeekSound = new Audio('./sound/look at 3 policy cards.mp3');
+const secretRoleSound = new Audio('./sound/secret role.mp3');
 
 export function PlayBoard(props: PlayBoardProps) {
   const screen = useWindowSize();
@@ -83,9 +91,18 @@ export function PlayBoard(props: PlayBoardProps) {
   const showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
   const showChaos = props.state.type == 'cardReveal' && props.state.chaos;
 
-  useSound(backgroundMusic, true);
-  useSound(drumrollSound, props.state.type == 'cardReveal');
-  useSound(staySilentSound, props.state.type == 'legislativeSession');
+  const cardRevealOver = useDelay(props.state.type == 'cardReveal', 3800);
+
+  const t = props.state.type;
+  useSound(backgroundMusic, t != 'legislativeSession' && (t != 'cardReveal' || cardRevealOver));
+  useSound(tensionMusic, t == 'legislativeSession');
+  useSound(staySilentSound, t == 'legislativeSession');
+  useSound(electChancellorSound, props.state.type == 'election' && props.state.chancellorElect == undefined);
+  useSound(executePlayerSound, props.state.type == 'executiveAction' && props.state.action == 'execution');
+  useSound(playerDeathSound, props.state.type == 'executiveAction' && props.state.action == 'execution' && props.state.playerChosen != null);
+  useSound(investigateSound, props.state.type == 'executiveAction' && props.state.action == 'investigate');
+  useSound(policyPeekSound, props.state.type == 'executiveAction' && props.state.action == 'policyPeak');
+  useSound(secretRoleSound, props.state.type == 'nightRound');
 
   let electionTracker = props.electionTracker;
   if (props.state.type == 'election' && showResult && props.state.voteResult === false) {

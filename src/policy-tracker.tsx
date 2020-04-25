@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { animated, useSpring, interpolate } from 'react-spring';
-import { useWindowSize } from './util';
+import { useWindowSize, useDelay, useSound } from './util';
 import { Party } from './types';
 import { PolicyCard } from './policy-card';
 
@@ -15,32 +15,34 @@ interface PolicyTrackerCardProps {
   reveal: boolean;
 }
 
-function PolicyTrackerCard(props: PolicyTrackerCardProps) {
-  const animStateRef = React.useRef(props.reveal ? 0 : 3);
+var drumrollSound = new Audio('./sound/drum roll final.mp3');
+const fascistSound = new Audio('./sound/fascist card.mp3');
+const liberalSound = new Audio('./sound/liberal card.mp3');
 
-  const { y, xy, scale, rot } = useSpring({
-    from: {
-      y: props.reveal ? 150 : 0,
-      xy: props.reveal ? 0 : 1,
-      rot: props.reveal ? 180 : 0,
-      scale: (props.reveal ? props.startWidth : props.width) / 200
-    },
-    to: async (next, cancel) => {
-      if (animStateRef.current < 1) {
-        await next({ y: 50, xy: 0, rot: 180, scale: props.startWidth / 200 });
-        animStateRef.current = 1;
-      }
-      if (animStateRef.current < 2) {
-        await new Promise(r => setTimeout(r, 1000));
-        animStateRef.current = 2;
-      }
-      if (animStateRef.current < 3) {
-        await next({ y: 50, xy: 0, rot: 0, scale: props.startWidth / 200 });
-        animStateRef.current = 3;
-      }
-      await next({ y: 0, xy: 1, scale: props.width / 200 });
-    }
-  }) as any;
+function PolicyTrackerCard(props: PolicyTrackerCardProps) {
+  //const animStateRef = React.useRef(props.reveal ? 0 : 3);
+
+  const step1 = useDelay(props.reveal, 900);
+  const step2 = useDelay(step1, 1700);
+  const step3 = useDelay(step2, 1500);
+
+  let to = { y: 150, xy: 0, rot: 180, scale: props.startWidth / 200 };
+  if (step1 || !props.reveal) {
+    to.y = 50;
+  }
+  if (step2 || !props.reveal) {
+    to.rot = 0;
+  }
+  if (step3 || !props.reveal) {
+    to.y = 0;
+    to.xy = 1;
+    to.scale = props.width / 200;
+  }
+
+  useSound(drumrollSound, props.reveal);
+  useSound(props.party == 'Liberal' ? liberalSound : fascistSound, step2 && props.reveal);
+
+  const { y, xy, scale, rot } = useSpring(to) as any;
 
   return (
     <animated.div style={{
@@ -84,6 +86,7 @@ export function PolicyTracker(props: PolicyTrackerProps) {
   const cards: JSX.Element[] = [];
   for (let i = 0; i < numCards + (reveal ? 1 : 0); i++) {
     cards.push(<PolicyTrackerCard
+      key={i}
       party={party}
       x={scale * 170 * (i - 0.5 * (maxNumCards - 1)) - (0.5 * SIDEPANEL_WIDTH)}
       y={top}

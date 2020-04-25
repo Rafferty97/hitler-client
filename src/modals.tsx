@@ -34,8 +34,17 @@ interface ElectionModalProps {
 }
 
 const jaSound = new Audio('./sound/ja.mp3');
-const neinSound = new Audio('./sound/nein.mp3');
+const neinSound = new Audio('./sound/nein1.mp3');
+const neinSound2 = new Audio('./sound/neinneinnein.mp3');
 const voteNowSound = new Audio('./sound/cast-vote.mp3');
+
+function getNeinSound(): HTMLAudioElement {
+  if (Math.random() < 0.25) {
+    return neinSound2;
+  } else {
+    return neinSound;
+  }
+}
 
 export function ElectionModal(props: ElectionModalProps) {
   const { election, players, showResult } = props;
@@ -51,7 +60,7 @@ export function ElectionModal(props: ElectionModalProps) {
     }
   }, [showResult]);
 
-  useSound(election.voteResult ? jaSound : neinSound, showResult);
+  useSound(election.voteResult ? jaSound : getNeinSound(), showResult);
   useSound(voteNowSound, showVoting);
 
   return <>
@@ -132,19 +141,19 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
       copy = 'The president must now execute a player.';
       break;
     case 'investigate':
-      copy = 'The president may now investigate a players loyalty.';
+      copy = 'The president may now investigate a player\'s loyalty.';
       break;
     case 'policyPeak':
       copy = 'The president may now peek at the top three policy cards.';
       break;
     case 'specialElection':
-      copy = 'A special election has been called. The president must now nominate his successor.';
+      copy = 'A special election has been called. The president must now nominate their successor.';
       break;
   }
 
   React.useEffect(() => {
     if (state.playerChosen != null && props.state.action != 'investigate') {
-      const timeout = setTimeout(props.done, 2500);
+      const timeout = setTimeout(props.done, 5000);
       return () => clearTimeout(timeout);
     }
   }, [state.playerChosen]);
