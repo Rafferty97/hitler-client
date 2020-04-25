@@ -2584,19 +2584,19 @@ var main = (function (exports, React, reactDom) {
                 var item = _a.item, key = _a.key, style = _a.props;
                 var modal;
                 if (item.type == 'nightRound') {
-                    modal = React.createElement(NightRoundModal, null);
+                    modal = React.createElement(NightRoundModal, { key: "night" });
                 }
                 if (item.type == 'election') {
                     modal = React.createElement(ElectionModal, { key: key, election: item, players: props.players, showResult: showResult, done: props.done });
                 }
                 if (item.type == 'legislativeSession') {
-                    modal = React.createElement(LegislativeModal, { state: item, players: props.players });
+                    modal = React.createElement(LegislativeModal, { key: "legislative", state: item, players: props.players });
                 }
                 if (item.type == 'executiveAction') {
-                    modal = React.createElement(ExecutiveModal, { state: item, players: props.players, done: props.done });
+                    modal = React.createElement(ExecutiveModal, { key: "executive", state: item, players: props.players, done: props.done });
                 }
                 if (item.type == 'end') {
-                    modal = React.createElement(GameOverModal, { state: item, players: props.players });
+                    modal = React.createElement(GameOverModal, { key: "gameover", state: item, players: props.players });
                 }
                 return modal ? (React.createElement(extendedAnimated.div, { className: "modal", style: style }, modal)) : null;
             })),
