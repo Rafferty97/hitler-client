@@ -88,6 +88,7 @@ export function BoardApp() {
   return <div>
     <div className={`connection on-board${connected ? ' on' : ''}`}>
       {connected ? 'Connected' : 'Offline'}
+      <a href="/hitler" className="home">HOME</a>
       <div className="gameid">{joinGameMsg?.gameId}</div>
     </div>
     {controls}
