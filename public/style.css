@@ -43,6 +43,10 @@ body:before {
     box-sizing: border-box;
 }
 
+.connection.on-board {
+    border-bottom: 2px solid black;
+}
+
 .connection:before {
     content: "";
     display: inline-block;

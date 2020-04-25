@@ -80,7 +80,7 @@ export function BoardApp() {
   }
 
   return <div>
-    <div className={`connection${connected ? ' on' : ''}`}>
+    <div className={`connection on-board${connected ? ' on' : ''}`}>
       {connected ? 'Connected' : 'Offline'}
       <div className="gameid">{joinGameMsg?.gameId}</div>
     </div>

@@ -67,7 +67,7 @@ var main = (function (exports, React, reactDom) {
         }
     }
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://192.168.1.13:8888/" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2672,7 +2672,7 @@ var main = (function (exports, React, reactDom) {
             controls = React.createElement(PlayBoard, __assign({}, state, { done: function () { return send({ type: 'board_next' }); } }));
         }
         return React.createElement("div", null,
-            React.createElement("div", { className: "connection" + (connected ? ' on' : '') },
+            React.createElement("div", { className: "connection on-board" + (connected ? ' on' : '') },
                 connected ? 'Connected' : 'Offline',
                 React.createElement("div", { className: "gameid" }, joinGameMsg === null || joinGameMsg === void 0 ? void 0 : joinGameMsg.gameId)),
             controls,
