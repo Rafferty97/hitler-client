@@ -143,7 +143,7 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
   }
 
   React.useEffect(() => {
-    if (state.playerChosen != null) {
+    if (state.playerChosen != null && props.state.action != 'investigate') {
       const timeout = setTimeout(props.done, 2500);
       return () => clearTimeout(timeout);
     }

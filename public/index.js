@@ -2495,7 +2495,7 @@ var main = (function (exports, React, reactDom) {
                 break;
         }
         React.useEffect(function () {
-            if (state.playerChosen != null) {
+            if (state.playerChosen != null && props.state.action != 'investigate') {
                 var timeout_2 = setTimeout(props.done, 2500);
                 return function () { return clearTimeout(timeout_2); };
             }
