@@ -328,6 +328,18 @@ body:before {
     background: linear-gradient(297deg, rgba(20,20,20,0.9) 0%, rgba(60,60,60,0.9) 100%);
 }
 
+.play-board .modal.no-bk {
+    background: transparent;
+}
+
+.play-board .modal.fascist-win {
+    background: rgba(140, 40, 40, 0.95);
+}
+
+.play-board .modal.liberal-win {
+    background: rgba(40, 140, 140, 0.95);
+}
+
 .play-board .modal h1,
 .chaos {
     font-size: 3.5vw;

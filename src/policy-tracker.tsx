@@ -18,12 +18,13 @@ interface PolicyTrackerCardProps {
 var drumrollSound = new Audio('./sound/drum roll final.mp3');
 const fascistSound = new Audio('./sound/fascist card.mp3');
 const liberalSound = new Audio('./sound/liberal card.mp3');
+liberalSound.volume = 0.8;
 
 function PolicyTrackerCard(props: PolicyTrackerCardProps) {
   //const animStateRef = React.useRef(props.reveal ? 0 : 3);
 
   const step1 = useDelay(props.reveal, 900);
-  const step2 = useDelay(step1, 1700);
+  const step2 = useDelay(step1, 1600);
   const step3 = useDelay(step2, 1500);
 
   let to = { y: 150, xy: 0, rot: 180, scale: props.startWidth / 200 };

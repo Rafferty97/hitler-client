@@ -65,7 +65,9 @@ export function BoardApp() {
 
   React.useEffect(() => {
     if (state?.state?.type == 'cardReveal') {
-      const timeout = setTimeout(() => send({ type: 'board_next' }), 5000);
+      const timeout = setTimeout(() => {
+        send({ type: 'board_next', state: 'cardReveal' });
+      }, 5000);
       return () => clearTimeout(timeout);
     }
   }, [state?.state?.type]);
@@ -82,7 +84,7 @@ export function BoardApp() {
   } else {
     controls = <PlayBoard
       {...state}
-      done={() => send({ type: 'board_next' })} />;
+      done={() => send({ type: 'board_next', state: state.state.type })} />;
   }
 
   return <div>

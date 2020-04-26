@@ -7,7 +7,7 @@ import { animated, useTransition } from 'react-spring';
 import { VoteResult } from './vote-result';
 import { ElectionTracker } from './election-tracker';
 
-function PlayerItem(props: { player: PublicPlayer, vote: boolean | null }) {
+function PlayerItem(props: { player: PublicPlayer, vote: boolean | null, president: boolean, chancellor: boolean }) {
   const { player, vote: vote_ } = props;
 
   const [vote, setVote] = React.useState({ show: false, vote: false });
@@ -25,6 +25,8 @@ function PlayerItem(props: { player: PublicPlayer, vote: boolean | null }) {
 
   return <div className={`player-item${player.isDead ? ' dead' : ''}`}>
     {player.name}
+    {props.president ? ' (P)' : ''}
+    {props.chancellor ? ' (C)' : ''}
     {player.isConfirmedNotHitler && <div className="not-hitler">Not Hitler!</div>}
     <div className={`vote${vote.show ? '' : ' hidden'} ${vote.vote ? 'ja' : 'nein'}`}>
       {vote.vote ? 'JA!' : 'NEIN!'}
@@ -39,6 +41,8 @@ export interface PlayBoardProps {
   numFascistCards: number;
   electionTracker: number;
   drawPile: Party[];
+  lastPresident: number;
+  lastChancellor: number;
   done: () => any;
 }
 
@@ -50,10 +54,10 @@ function mapModalKey(state: GameState) {
 }
 
 const backgroundMusic = new Audio('./sound/moonlight.mp3');
-backgroundMusic.volume = 0.7;
+backgroundMusic.volume = 0.8;
 backgroundMusic.loop = true;
 const tensionMusic = new Audio('./sound/tension.mp3');
-tensionMusic.volume = 0.5;
+tensionMusic.volume = 0.4;
 tensionMusic.loop = true;
 const staySilentSound = new Audio('./sound/remain-silent.mp3');
 const electChancellorSound = new Audio('./sound/elect a chancellor.mp3');
@@ -67,6 +71,13 @@ export function PlayBoard(props: PlayBoardProps) {
   const screen = useWindowSize();
 
   const gameStarted = ['lobby', 'nightRound'].indexOf(props.state.type) == -1;
+
+  let president = props.lastPresident;
+  let chancellor = props.lastChancellor;
+  if (props.state.type == 'legislativeSession') {
+    president = props.state.president;
+    chancellor = props.state.chancellor;
+  }
 
   const modalTransitions = useTransition(props.state, mapModalKey, {
     from: { transform: 'translate(0%, 100%)' },
@@ -88,13 +99,13 @@ export function PlayBoard(props: PlayBoardProps) {
     }
   };
 
-  const showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
   const showChaos = props.state.type == 'cardReveal' && props.state.chaos;
+  const hideChaos = useDelay(showChaos, 2500);
 
   const cardRevealOver = useDelay(props.state.type == 'cardReveal', 3800);
 
   const t = props.state.type;
-  useSound(backgroundMusic, t != 'legislativeSession' && (t != 'cardReveal' || cardRevealOver));
+  useSound(backgroundMusic, t != 'legislativeSession' && (t != 'cardReveal' || cardRevealOver) && t != 'end');
   useSound(tensionMusic, t == 'legislativeSession');
   useSound(staySilentSound, t == 'legislativeSession');
   useSound(electChancellorSound, props.state.type == 'election' && props.state.chancellorElect == undefined);
@@ -108,7 +119,7 @@ export function PlayBoard(props: PlayBoardProps) {
   if (props.state.type == 'election' && showResult && props.state.voteResult === false) {
     electionTracker++;
   }
-  if (props.state.type == 'cardReveal' && props.state.card == 'Veto') {
+  if (props.state.type == 'legislativeSession' && props.state.turn == 'VetoApproved') {
     electionTracker++;
   }
 
@@ -119,7 +130,13 @@ export function PlayBoard(props: PlayBoardProps) {
         <PolicyTracker screen={screen} party="Fascist" numCards={props.numFascistCards} reveal={revealFas} numPlayers={numPlayers} />
       </>}
       <div className="util">
-        {props.players.map((player, i) => <PlayerItem player={player} vote={getVote(i)} />)}
+        {props.players.map((player, i) => (
+          <PlayerItem
+            player={player}
+            vote={getVote(i)}
+            president={i === president}
+            chancellor={i === chancellor} />
+        ))}
         <div>
           <ElectionTracker tracker={electionTracker} deck={props.drawPile.length} />
         </div>
@@ -127,8 +144,10 @@ export function PlayBoard(props: PlayBoardProps) {
       <div className="modal-wrap">
         {modalTransitions.map(({ item, key, props: style }) => {
           let modal;
+          let cl = 'modal';
           if (item.type == 'nightRound') {
             modal = <NightRoundModal />;
+            cl = 'modal no-bk';
           }
           if (item.type == 'election') {
             modal = <ElectionModal
@@ -138,21 +157,21 @@ export function PlayBoard(props: PlayBoardProps) {
               done={props.done} />;
           }
           if (item.type == 'legislativeSession') {
-            modal = <LegislativeModal state={item} players={props.players} />;
+            modal = <LegislativeModal state={item} players={props.players} done={props.done} />;
           }
           if (item.type == 'executiveAction') {
             modal = <ExecutiveModal state={item} players={props.players} done={props.done} />;
           }
           if (item.type == 'end') {
             modal = <GameOverModal state={item} players={props.players} />;
+            cl = 'modal ' + item.winner.toLowerCase() + '-win';
           }
           return modal ? (
-            <animated.div key={key} className="modal" style={style}>{modal}</animated.div>
+            <animated.div key={key} className={cl} style={style}>{modal}</animated.div>
           ) : null;
         })}
       </div>
-      {showVeto && <VoteResult result="veto" />}
-      <h1 className={`chaos${showChaos ? ' show' : ''}`}>Chaos!</h1>
+      <h1 className={`chaos${showChaos && !hideChaos ? ' show' : ''}`}>Chaos!</h1>
     </div>
   );
 }

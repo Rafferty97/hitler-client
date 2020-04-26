@@ -29,7 +29,7 @@ var main = (function (exports, React, reactDom) {
         return __assign.apply(this, arguments);
     };
 
-    var WS_URL =  'wss://alexanderrafferty.com:8083/';
+    var WS_URL = "ws://localhost:8888" ;
     var unconnectedMessageHandler = function () {
         throw new Error('Not connected to server.');
     };
@@ -2263,10 +2263,11 @@ var main = (function (exports, React, reactDom) {
     var drumrollSound = new Audio('./sound/drum roll final.mp3');
     var fascistSound = new Audio('./sound/fascist card.mp3');
     var liberalSound = new Audio('./sound/liberal card.mp3');
+    liberalSound.volume = 0.8;
     function PolicyTrackerCard(props) {
         //const animStateRef = React.useRef(props.reveal ? 0 : 3);
         var step1 = useDelay(props.reveal, 900);
-        var step2 = useDelay(step1, 1700);
+        var step2 = useDelay(step1, 1600);
         var step3 = useDelay(step2, 1500);
         var to = { y: 150, xy: 0, rot: 180, scale: props.startWidth / 200 };
         if (step1 || !props.reveal) {
@@ -2345,6 +2346,7 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { className: props.result }, props.result.toUpperCase() + '!'));
     }
 
+    var clickSound = new Audio('./sound/click.mp3');
     function PlayerName(props) {
         var style = useSpring({
             opacity: props.show ? 1 : 0,
@@ -2355,6 +2357,7 @@ var main = (function (exports, React, reactDom) {
                 friction: 22
             }
         });
+        useSound(clickSound, props.show);
         return React.createElement(extendedAnimated.div, { className: "player-name", style: style }, props.player.name);
     }
     function NightRoundModal() {
@@ -2362,16 +2365,17 @@ var main = (function (exports, React, reactDom) {
             React.createElement("h1", null, "Night Round"),
             React.createElement("p", null, "You have now been given your secret role."));
     }
-    var jaSound = new Audio('./sound/ja.mp3');
+    var jaSound = new Audio('./sound/Ja hitler.mp3');
+    var jaSound2 = new Audio('./sound/ja ja ja ja hitler.mp3');
     var neinSound = new Audio('./sound/nein1.mp3');
     var neinSound2 = new Audio('./sound/neinneinnein.mp3');
     var voteNowSound = new Audio('./sound/cast-vote.mp3');
-    function getNeinSound() {
-        if (Math.random() < 0.25) {
-            return neinSound2;
+    function getVoteSound(result) {
+        if (Math.random() < 0.2) {
+            return result ? jaSound2 : neinSound2;
         }
         else {
-            return neinSound;
+            return result ? jaSound : neinSound;
         }
     }
     function ElectionModal(props) {
@@ -2386,7 +2390,7 @@ var main = (function (exports, React, reactDom) {
                 return function () { return clearTimeout(timeout_1); };
             }
         }, [showResult]);
-        useSound(election.voteResult ? jaSound : getNeinSound(), showResult);
+        useSound(getVoteSound(election.voteResult == true), showResult);
         useSound(voteNowSound, showVoting);
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Election"),
@@ -2400,9 +2404,12 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { className: "vote-now" + (showVoting ? '' : ' hidden') }, "Vote now!"),
             showResult && React.createElement(VoteResult, { result: election.voteResult ? 'ja' : 'nein' }));
     }
+    var vetoCalledSound = new Audio('./sound/veto call.mp3');
+    var vetoRejectedSound = new Audio('./sound/veto rejected.mp3');
+    var vetoApprovedSound = new Audio('./sound/veto pass.mp3');
     function LegislativeModal(props) {
         var state = props.state, players = props.players;
-        var turnCopy;
+        var turnCopy = '';
         switch (state.turn) {
             case 'President':
                 turnCopy = 'The president is discarding a policy.';
@@ -2411,12 +2418,24 @@ var main = (function (exports, React, reactDom) {
                 turnCopy = 'The chancellor is discarding a policy.';
                 break;
             case 'Veto':
-                turnCopy = 'The chancellor has called for a VETO!';
+                turnCopy = 'The chancellor has called for a veto!';
                 break;
             case 'ChancellorAgain':
-                turnCopy = 'The president has rejected the VETO. The chancellor must discard a policy.';
+                turnCopy = 'The president has rejected the veto. The chancellor must discard a policy.';
+                break;
+            case 'VetoApproved':
+                turnCopy = 'The agenda has been vetoed!';
                 break;
         }
+        useSound(vetoCalledSound, state.turn == 'Veto');
+        useSound(vetoRejectedSound, state.turn == 'ChancellorAgain');
+        useSound(vetoApprovedSound, state.turn == 'VetoApproved');
+        React.useEffect(function () {
+            if (state.turn == 'VetoApproved') {
+                var timeout_2 = setTimeout(props.done, 3500);
+                return function () { return clearTimeout(timeout_2); };
+            }
+        }, [state.turn == 'VetoApproved']);
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Legislative Session"),
             React.createElement("div", { className: "gov" },
@@ -2447,9 +2466,9 @@ var main = (function (exports, React, reactDom) {
                 break;
         }
         React.useEffect(function () {
-            if (state.playerChosen != null && props.state.action != 'investigate') {
-                var timeout_2 = setTimeout(props.done, 5000);
-                return function () { return clearTimeout(timeout_2); };
+            if (state.playerChosen != null && ['specialElection', 'execution'].indexOf(props.state.action) != -1) {
+                var timeout_3 = setTimeout(props.done, 5000);
+                return function () { return clearTimeout(timeout_3); };
             }
         }, [state.playerChosen]);
         return React.createElement(React.Fragment, null,
@@ -2458,31 +2477,46 @@ var main = (function (exports, React, reactDom) {
             React.createElement("div", { style: { textAlign: 'center' } },
                 React.createElement(PlayerName, { player: players[(_a = state.playerChosen) !== null && _a !== void 0 ? _a : 0], show: state.playerChosen != null })));
     }
+    var fascistVictory = new Audio('./sound/fascist victory.mp3');
+    fascistVictory.volume = 0.8;
+    var liberalVictory = new Audio('./sound/liberal victory.mp3');
+    var fascistsWin = new Audio('./sound/the fascists win.mp3');
+    var liberalsWin = new Audio('./sound/liberal win.mp3');
+    var hitlerChancellor = new Audio('./sound/hitler chancellor.mp3');
+    var hitlerExecuted = new Audio('./sound/hitler executed.mp3');
     function GameOverModal(props) {
         var state = props.state, players = props.players;
-        var copy;
-        switch (state.winType) {
-            case 'legislative':
-                switch (state.winner) {
-                    case 'Liberal':
-                        copy = 'The liberals have completed their policy track';
+        var copy, sound1, sound2;
+        switch (state.winner) {
+            case 'Liberal':
+                sound1 = liberalVictory;
+                switch (state.winType) {
+                    case 'hitler':
+                        copy = 'Hitler has been assassinated';
+                        sound2 = hitlerExecuted;
                         break;
-                    case 'Fascist':
-                        copy = 'The fascists have completed their policy track';
+                    case 'legislative':
+                        copy = 'The liberals have completed their policy track';
+                        sound2 = liberalsWin;
                         break;
                 }
                 break;
-            case 'hitler':
-                switch (state.winner) {
-                    case 'Liberal':
-                        copy = 'Hitler has been assassinated';
-                        break;
-                    case 'Fascist':
+            case 'Fascist':
+                sound1 = fascistVictory;
+                switch (state.winType) {
+                    case 'hitler':
                         copy = 'Hitler has been elected chancellor';
+                        sound2 = hitlerChancellor;
+                        break;
+                    case 'legislative':
+                        copy = 'The fascists have completed their policy track';
+                        sound2 = fascistsWin;
                         break;
                 }
                 break;
         }
+        useSound(sound1, true);
+        useSound(sound2, true);
         return React.createElement(React.Fragment, null,
             React.createElement("h1", null, "Game Over"),
             React.createElement("p", { className: "gameover1" },
@@ -2525,6 +2559,8 @@ var main = (function (exports, React, reactDom) {
         }, [vote_]);
         return React.createElement("div", { className: "player-item" + (player.isDead ? ' dead' : '') },
             player.name,
+            props.president ? ' (P)' : '',
+            props.chancellor ? ' (C)' : '',
             player.isConfirmedNotHitler && React.createElement("div", { className: "not-hitler" }, "Not Hitler!"),
             React.createElement("div", { className: "vote" + (vote.show ? '' : ' hidden') + " " + (vote.vote ? 'ja' : 'nein') }, vote.vote ? 'JA!' : 'NEIN!'));
     }
@@ -2535,10 +2571,10 @@ var main = (function (exports, React, reactDom) {
         return state.type;
     }
     var backgroundMusic = new Audio('./sound/moonlight.mp3');
-    backgroundMusic.volume = 0.7;
+    backgroundMusic.volume = 0.8;
     backgroundMusic.loop = true;
     var tensionMusic = new Audio('./sound/tension.mp3');
-    tensionMusic.volume = 0.5;
+    tensionMusic.volume = 0.4;
     tensionMusic.loop = true;
     var staySilentSound = new Audio('./sound/remain-silent.mp3');
     var electChancellorSound = new Audio('./sound/elect a chancellor.mp3');
@@ -2550,6 +2586,12 @@ var main = (function (exports, React, reactDom) {
     function PlayBoard(props) {
         var screen = useWindowSize();
         var gameStarted = ['lobby', 'nightRound'].indexOf(props.state.type) == -1;
+        var president = props.lastPresident;
+        var chancellor = props.lastChancellor;
+        if (props.state.type == 'legislativeSession') {
+            president = props.state.president;
+            chancellor = props.state.chancellor;
+        }
         var modalTransitions = useTransition(props.state, mapModalKey, {
             from: { transform: 'translate(0%, 100%)' },
             enter: { transform: 'translate(0%, 0%)' },
@@ -2568,11 +2610,11 @@ var main = (function (exports, React, reactDom) {
                 return null;
             }
         };
-        var showVeto = useDelay(props.state.type == 'cardReveal' && props.state.card == 'Veto', 1000);
         var showChaos = props.state.type == 'cardReveal' && props.state.chaos;
+        var hideChaos = useDelay(showChaos, 2500);
         var cardRevealOver = useDelay(props.state.type == 'cardReveal', 3800);
         var t = props.state.type;
-        useSound(backgroundMusic, t != 'legislativeSession' && (t != 'cardReveal' || cardRevealOver));
+        useSound(backgroundMusic, t != 'legislativeSession' && (t != 'cardReveal' || cardRevealOver) && t != 'end');
         useSound(tensionMusic, t == 'legislativeSession');
         useSound(staySilentSound, t == 'legislativeSession');
         useSound(electChancellorSound, props.state.type == 'election' && props.state.chancellorElect == undefined);
@@ -2585,7 +2627,7 @@ var main = (function (exports, React, reactDom) {
         if (props.state.type == 'election' && showResult && props.state.voteResult === false) {
             electionTracker++;
         }
-        if (props.state.type == 'cardReveal' && props.state.card == 'Veto') {
+        if (props.state.type == 'legislativeSession' && props.state.turn == 'VetoApproved') {
             electionTracker++;
         }
         return (React.createElement("div", { className: "play-board" },
@@ -2593,31 +2635,33 @@ var main = (function (exports, React, reactDom) {
                 React.createElement(PolicyTracker, { screen: screen, party: "Liberal", numCards: props.numLiberalCards, reveal: revealLib, numPlayers: numPlayers }),
                 React.createElement(PolicyTracker, { screen: screen, party: "Fascist", numCards: props.numFascistCards, reveal: revealFas, numPlayers: numPlayers })),
             React.createElement("div", { className: "util" },
-                props.players.map(function (player, i) { return React.createElement(PlayerItem, { player: player, vote: getVote(i) }); }),
+                props.players.map(function (player, i) { return (React.createElement(PlayerItem, { player: player, vote: getVote(i), president: i === president, chancellor: i === chancellor })); }),
                 React.createElement("div", null,
                     React.createElement(ElectionTracker, { tracker: electionTracker, deck: props.drawPile.length }))),
             React.createElement("div", { className: "modal-wrap" }, modalTransitions.map(function (_a) {
                 var item = _a.item, key = _a.key, style = _a.props;
                 var modal;
+                var cl = 'modal';
                 if (item.type == 'nightRound') {
                     modal = React.createElement(NightRoundModal, null);
+                    cl = 'modal no-bk';
                 }
                 if (item.type == 'election') {
                     modal = React.createElement(ElectionModal, { election: item, players: props.players, showResult: showResult, done: props.done });
                 }
                 if (item.type == 'legislativeSession') {
-                    modal = React.createElement(LegislativeModal, { state: item, players: props.players });
+                    modal = React.createElement(LegislativeModal, { state: item, players: props.players, done: props.done });
                 }
                 if (item.type == 'executiveAction') {
                     modal = React.createElement(ExecutiveModal, { state: item, players: props.players, done: props.done });
                 }
                 if (item.type == 'end') {
                     modal = React.createElement(GameOverModal, { state: item, players: props.players });
+                    cl = 'modal ' + item.winner.toLowerCase() + '-win';
                 }
-                return modal ? (React.createElement(extendedAnimated.div, { key: key, className: "modal", style: style }, modal)) : null;
+                return modal ? (React.createElement(extendedAnimated.div, { key: key, className: cl, style: style }, modal)) : null;
             })),
-            showVeto && React.createElement(VoteResult, { result: "veto" }),
-            React.createElement("h1", { className: "chaos" + (showChaos ? ' show' : '') }, "Chaos!")));
+            React.createElement("h1", { className: "chaos" + (showChaos && !hideChaos ? ' show' : '') }, "Chaos!")));
     }
 
     function BoardApp() {
@@ -2679,7 +2723,9 @@ var main = (function (exports, React, reactDom) {
         React.useEffect(function () {
             var _a;
             if (((_a = state === null || state === void 0 ? void 0 : state.state) === null || _a === void 0 ? void 0 : _a.type) == 'cardReveal') {
-                var timeout_1 = setTimeout(function () { return send({ type: 'board_next' }); }, 5000);
+                var timeout_1 = setTimeout(function () {
+                    send({ type: 'board_next', state: 'cardReveal' });
+                }, 5000);
                 return function () { return clearTimeout(timeout_1); };
             }
         }, [(_a = state === null || state === void 0 ? void 0 : state.state) === null || _a === void 0 ? void 0 : _a.type]);
@@ -2692,7 +2738,7 @@ var main = (function (exports, React, reactDom) {
                     React.createElement("button", { onClick: createGame }, "Create New Game")));
         }
         else {
-            controls = React.createElement(PlayBoard, __assign({}, state, { done: function () { return send({ type: 'board_next' }); } }));
+            controls = React.createElement(PlayBoard, __assign({}, state, { done: function () { return send({ type: 'board_next', state: state.state.type }); } }));
         }
         return React.createElement("div", null,
             React.createElement("div", { className: "connection on-board" + (connected ? ' on' : '') },

@@ -4,6 +4,8 @@ import { Election, PublicPlayer, LegislativeSession, ExecutiveAction, EndGame } 
 import { useDelay, useSound } from './util';
 import { VoteResult } from './vote-result';
 
+const clickSound = new Audio('./sound/click.mp3');
+
 function PlayerName(props: { player: PublicPlayer, show: boolean }) {
   const style = useSpring({
     opacity: props.show ? 1 : 0,
@@ -14,6 +16,7 @@ function PlayerName(props: { player: PublicPlayer, show: boolean }) {
       friction: 22
     }
   });
+  useSound(clickSound, props.show);
   return <animated.div className="player-name" style={style}>
     {props.player.name}
   </animated.div>;
@@ -33,16 +36,17 @@ interface ElectionModalProps {
   done: () => any;
 }
 
-const jaSound = new Audio('./sound/ja.mp3');
+const jaSound = new Audio('./sound/Ja hitler.mp3');
+const jaSound2 = new Audio('./sound/ja ja ja ja hitler.mp3');
 const neinSound = new Audio('./sound/nein1.mp3');
 const neinSound2 = new Audio('./sound/neinneinnein.mp3');
 const voteNowSound = new Audio('./sound/cast-vote.mp3');
 
-function getNeinSound(): HTMLAudioElement {
-  if (Math.random() < 0.25) {
-    return neinSound2;
+function getVoteSound(result: boolean): HTMLAudioElement {
+  if (Math.random() < 0.2) {
+    return result ? jaSound2 : neinSound2;
   } else {
-    return neinSound;
+    return result ? jaSound : neinSound;
   }
 }
 
@@ -60,7 +64,7 @@ export function ElectionModal(props: ElectionModalProps) {
     }
   }, [showResult]);
 
-  useSound(election.voteResult ? jaSound : getNeinSound(), showResult);
+  useSound(getVoteSound(election.voteResult == true), showResult);
   useSound(voteNowSound, showVoting);
 
   return <>
@@ -84,14 +88,19 @@ export function ElectionModal(props: ElectionModalProps) {
   </>;
 }
 
+const vetoCalledSound = new Audio('./sound/veto call.mp3');
+const vetoRejectedSound = new Audio('./sound/veto rejected.mp3');
+const vetoApprovedSound = new Audio('./sound/veto pass.mp3');
+
 interface LegislativeModalProps {
   state: LegislativeSession;
   players: PublicPlayer[];
+  done: () => any;
 }
 
 export function LegislativeModal(props: LegislativeModalProps) {
   const { state, players } = props;
-  let turnCopy;
+  let turnCopy = '';
   switch (state.turn) {
     case 'President':
       turnCopy = 'The president is discarding a policy.';
@@ -100,12 +109,27 @@ export function LegislativeModal(props: LegislativeModalProps) {
       turnCopy = 'The chancellor is discarding a policy.';
       break;
     case 'Veto':
-      turnCopy = 'The chancellor has called for a VETO!';
+      turnCopy = 'The chancellor has called for a veto!';
       break;
     case 'ChancellorAgain':
-      turnCopy = 'The president has rejected the VETO. The chancellor must discard a policy.';
+      turnCopy = 'The president has rejected the veto. The chancellor must discard a policy.';
+      break;
+    case 'VetoApproved':
+      turnCopy = 'The agenda has been vetoed!';
       break;
   }
+
+  useSound(vetoCalledSound, state.turn == 'Veto');
+  useSound(vetoRejectedSound, state.turn == 'ChancellorAgain');
+  useSound(vetoApprovedSound, state.turn == 'VetoApproved');
+
+  React.useEffect(() => {
+    if (state.turn == 'VetoApproved') {
+      const timeout = setTimeout(props.done, 3500);
+      return () => clearTimeout(timeout);
+    }
+  }, [state.turn == 'VetoApproved']);
+
   return <>
     <h1>Legislative Session</h1>
     <div className="gov">
@@ -152,7 +176,7 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
   }
 
   React.useEffect(() => {
-    if (state.playerChosen != null && props.state.action != 'investigate') {
+    if (state.playerChosen != null && ['specialElection', 'execution'].indexOf(props.state.action) != -1) {
       const timeout = setTimeout(props.done, 5000);
       return () => clearTimeout(timeout);
     }
@@ -167,6 +191,14 @@ export function ExecutiveModal(props: ExecutiveModalProps) {
   </>;
 }
 
+const fascistVictory = new Audio('./sound/fascist victory.mp3');
+fascistVictory.volume = 0.8;
+const liberalVictory = new Audio('./sound/liberal victory.mp3');
+const fascistsWin = new Audio('./sound/the fascists win.mp3');
+const liberalsWin = new Audio('./sound/liberal win.mp3');
+const hitlerChancellor = new Audio('./sound/hitler chancellor.mp3');
+const hitlerExecuted = new Audio('./sound/hitler executed.mp3');
+
 interface GameOverModalProps {
   state: EndGame;
   players: PublicPlayer[];
@@ -175,21 +207,38 @@ interface GameOverModalProps {
 export function GameOverModal(props: GameOverModalProps) {
   const { state, players } = props;
 
-  let copy;
-  switch (state.winType) {
-    case 'legislative':
-      switch (state.winner) {
-        case 'Liberal': copy = 'The liberals have completed their policy track'; break;
-        case 'Fascist': copy = 'The fascists have completed their policy track'; break;
+  let copy, sound1, sound2;
+  switch (state.winner) {
+    case 'Liberal':
+      sound1 = liberalVictory;
+      switch (state.winType) {
+        case 'hitler':
+          copy = 'Hitler has been assassinated';
+          sound2 = hitlerExecuted;
+          break;
+        case 'legislative':
+          copy = 'The liberals have completed their policy track';
+          sound2 = liberalsWin;
+          break;
       }
       break;
-    case 'hitler':
-      switch (state.winner) {
-        case 'Liberal': copy = 'Hitler has been assassinated'; break;
-        case 'Fascist': copy = 'Hitler has been elected chancellor'; break;
+    case 'Fascist':
+      sound1 = fascistVictory;
+      switch (state.winType) {
+        case 'hitler':
+          copy = 'Hitler has been elected chancellor';
+          sound2 = hitlerChancellor;
+          break;
+        case 'legislative':
+          copy = 'The fascists have completed their policy track';
+          sound2 = fascistsWin;
+          break;
       }
       break;
   }
+
+  useSound(sound1, true);
+  useSound(sound2, true);
 
   return <>
     <h1>Game Over</h1>
