@@ -2780,11 +2780,11 @@ var main = (function (exports, React, reactDom) {
                 React.createElement("p", null, "Secret Hitler is designed by Max Temkin, Mike Boxleiter, Tommy Maranges and illustrated by Mackenzie Schubert."),
                 React.createElement("p", null,
                     "This game is attributed as per the ",
-                    React.createElement("a", { href: "https://creativecommons.org/licenses/by-nc-sa/4.0/" }, "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license"),
+                    React.createElement("a", { target: "_blank", href: "https://creativecommons.org/licenses/by-nc-sa/4.0/" }, "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license"),
                     "."),
                 React.createElement("p", null,
                     "The original game can be found at ",
-                    React.createElement("a", { href: "https://www.secrethitler.com/" }, "secrethitler.com"),
+                    React.createElement("a", { target: "_blank", href: "https://www.secrethitler.com/" }, "secrethitler.com"),
                     ".")));
     }
     reactDom.render(React.createElement(App, null), document.querySelector('#app'));
