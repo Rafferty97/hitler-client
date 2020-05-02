@@ -26,6 +26,25 @@ body:before {
     opacity: 0.05;
 }
 
+.licence {
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 800px;
+    padding: 0 50px;
+    margin: 40px auto;
+    text-align: center;
+    opacity: 0.5;
+}
+
+.licence p {
+    margin: 12px 0;
+    text-transform: none;
+}
+
+.licence p a {
+    color: white;
+}
+
 #app {
     position: relative;
     overflow: hidden;

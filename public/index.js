@@ -2768,13 +2768,24 @@ var main = (function (exports, React, reactDom) {
             setState(mode);
             window.history.pushState('', '', '?m=' + mode.substr(0, 1));
         };
-        return React.createElement("div", { className: "controls vcentre" },
-            React.createElement("div", { className: "form-row" },
-                React.createElement("button", { onClick: function () { return setMode('player'); } }, "New Player")),
-            React.createElement("div", { className: "form-row" },
-                React.createElement("p", { style: { margin: 0 } }, "\u2014 OR \u2014")),
-            React.createElement("div", { className: "form-row" },
-                React.createElement("button", { onClick: function () { return setMode('board'); } }, "Board Screen")));
+        return React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "controls vcentre" },
+                React.createElement("div", { className: "form-row" },
+                    React.createElement("button", { onClick: function () { return setMode('player'); } }, "New Player")),
+                React.createElement("div", { className: "form-row" },
+                    React.createElement("p", { style: { margin: 0 } }, "\u2014 OR \u2014")),
+                React.createElement("div", { className: "form-row" },
+                    React.createElement("button", { onClick: function () { return setMode('board'); } }, "Board Screen"))),
+            React.createElement("div", { className: "licence" },
+                React.createElement("p", null, "Secret Hitler is designed by Max Temkin, Mike Boxleiter, Tommy Maranges and illustrated by Mackenzie Schubert."),
+                React.createElement("p", null,
+                    "This game is attributed as per the ",
+                    React.createElement("a", { href: "https://creativecommons.org/licenses/by-nc-sa/4.0/" }, "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license"),
+                    "."),
+                React.createElement("p", null,
+                    "The original game can be found at ",
+                    React.createElement("a", { href: "https://www.secrethitler.com/" }, "secrethitler.com"),
+                    ".")));
     }
     reactDom.render(React.createElement(App, null), document.querySelector('#app'));
 
