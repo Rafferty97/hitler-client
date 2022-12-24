@@ -38,6 +38,11 @@ export function BoardApp() {
         case "update":
           setState(msg.state)
           setError(null)
+          if (msg.state.action?.type == "gameover" && msg.state.action.ended) {
+            setState(null)
+            setJoinGameMsg(null)
+            window.history.pushState("", "", `?m=b`)
+          }
           break
         case "error":
           if (msg.error.match(/game does not exist/i)) {

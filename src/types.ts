@@ -59,6 +59,7 @@ export interface EndGame {
   type: "end"
   winner: Party
   winType: "legislative" | "hitler"
+  ended: boolean
 }
 
 /* Player states */

@@ -197,6 +197,11 @@ export function PlayerApp() {
         case "update":
           setState(msg.state)
           setError(null)
+          if (msg.state.action?.type == "gameover" && msg.state.action.ended) {
+            setState(null)
+            setJoinGameMsg(null)
+            window.history.pushState("", "", `?m=p`)
+          }
           break
         case "error":
           if (msg.error.match(/game does not exist/i)) {
