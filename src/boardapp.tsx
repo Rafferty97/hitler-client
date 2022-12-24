@@ -92,6 +92,7 @@ export function BoardApp() {
   } else {
     controls = (
       <PlayBoard
+        gameId={joinGameMsg?.gameId}
         {...state}
         done={() => send({ type: "board_next", state: state.state.type })}
       />

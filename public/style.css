@@ -796,3 +796,40 @@ p.gameover-text {
     font-size: 1.75vw;
     text-shadow: 0.1em 0.1em 0 black;
 }
+
+.joinscreen {
+    margin-right: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.joinscreen p {
+    font-size: 22px;
+    line-height: 1;
+    margin: 0.5em;
+    letter-spacing: 0.02em;
+}
+
+.joinscreen strong {
+    color: orange;
+}
+
+.joinscreen h2 {
+    font-size: 5vw;
+    line-height: 1.25;
+    color: orange;
+    font-family: 'Germania One', sans-serif;
+    letter-spacing: 0.15em;
+    margin: 0;
+}
+
+.joinscreen img {
+    width: 20%;
+    min-width: 200px;
+    border-radius: 8px;
+    margin: 30px 0;
+    box-shadow: 0 2px 12px black;
+}

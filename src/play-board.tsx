@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useWindowSize, useDelay, useLatch, useSound } from "./util"
+import { useWindowSize, useDelay, useSound } from "./util"
 import { PolicyTracker } from "./policy-tracker"
 import { GameState, PublicPlayer, Party } from "./types"
 import {
@@ -11,6 +11,7 @@ import {
 } from "./modals"
 import { animated, useTransition } from "react-spring"
 import { ElectionTracker } from "./election-tracker"
+import QRCode from "qrcode-generator"
 
 function PlayerItem(props: {
   player: PublicPlayer
@@ -53,6 +54,7 @@ function PlayerItem(props: {
 }
 
 export interface PlayBoardProps {
+  gameId: string
   players: PublicPlayer[]
   state: GameState
   numLiberalCards: number
@@ -89,6 +91,14 @@ export function PlayBoard(props: PlayBoardProps) {
   const screen = useWindowSize()
 
   const gameStarted = ["lobby", "nightRound"].indexOf(props.state.type) == -1
+
+  const [qrCode, setQrCode] = React.useState<string>()
+  React.useEffect(() => {
+    const qr = QRCode(4, "L")
+    qr.addData(`https://secrethitler.live/?m=p&g=${props.gameId}`)
+    qr.make()
+    setQrCode(qr.createDataURL(20, 40))
+  }, [props.gameId])
 
   let president = props.lastPresident
   let chancellor = props.lastChancellor
@@ -192,6 +202,16 @@ export function PlayBoard(props: PlayBoardProps) {
             numPlayers={numPlayers}
           />
         </>
+      )}
+      {props.state.type === "lobby" && (
+        <div className="joinscreen">
+          <p>
+            Go to <strong>secrethitler.live</strong> and enter room code
+          </p>
+          <h2>{props.gameId}</h2>
+          <p>or scan the QR code</p>
+          <img src={qrCode} />
+        </div>
       )}
       <div className="util">
         {props.players.map((player, i) => (
