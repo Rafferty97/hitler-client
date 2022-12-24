@@ -2112,6 +2112,7 @@ var main = (function (exports, React, reactDom) {
             leave: { transform: "translate(0px, 30px)", opacity: 0 },
         });
         var _f = useWebSocket(function (msg) {
+            var _a;
             switch (msg.type) {
                 case "game_joined":
                     var joinMsg = {
@@ -2125,6 +2126,11 @@ var main = (function (exports, React, reactDom) {
                 case "update":
                     setState(msg.state);
                     setError(null);
+                    if (((_a = msg.state.action) === null || _a === void 0 ? void 0 : _a.type) == "gameover" && msg.state.action.ended) {
+                        setState(null);
+                        setJoinGameMsg(null);
+                        window.history.pushState("", "", "?m=p");
+                    }
                     break;
                 case "error":
                     if (msg.error.match(/game does not exist/i)) {
@@ -5032,6 +5038,11 @@ var main = (function (exports, React, reactDom) {
                 case "update":
                     setState(msg.state);
                     setError(null);
+                    if (msg.state.type == "end" && msg.state.ended) {
+                        setState(null);
+                        setJoinGameMsg(null);
+                        window.history.pushState("", "", "?m=b");
+                    }
                     break;
                 case "error":
                     if (msg.error.match(/game does not exist/i)) {
