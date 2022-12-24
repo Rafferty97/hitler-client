@@ -197,7 +197,7 @@ export function PlayerApp() {
         case "update":
           setState(msg.state)
           setError(null)
-          if (msg.state.action?.type == "gameover" && msg.state.action.ended) {
+          if (msg.state?.action?.type == "gameover" && msg.state.action.ended) {
             setState(null)
             setJoinGameMsg(null)
             window.history.pushState("", "", `?m=p`)

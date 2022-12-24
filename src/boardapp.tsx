@@ -38,7 +38,7 @@ export function BoardApp() {
         case "update":
           setState(msg.state)
           setError(null)
-          if (msg.state.type == "end" && msg.state.ended) {
+          if (msg.state?.state?.type == "end" && msg.state?.state?.ended) {
             setState(null)
             setJoinGameMsg(null)
             window.history.pushState("", "", `?m=b`)
