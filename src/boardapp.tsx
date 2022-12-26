@@ -36,13 +36,14 @@ export function BoardApp() {
           window.history.pushState("", "", `?m=b&g=${msg.gameId}`)
           break
         case "update":
-          setState(msg.state)
-          setError(null)
-          break
-        case "gameover":
-          setState(null)
-          setJoinGameMsg(null)
-          window.history.pushState("", "", `?m=p`)
+          if (msg.state.type === "gameover") {
+            setState(null)
+            setJoinGameMsg(null)
+            window.history.pushState("", "", `?m=b`)
+          } else {
+            setState(msg.state)
+            setError(null)
+          }
           break
         case "error":
           if (msg.error.match(/game does not exist/i)) {
@@ -91,7 +92,7 @@ export function BoardApp() {
   }, [])
 
   let controls
-  if (!state) {
+  if (!state || !state.state) {
     controls = (
       <div className="controls">
         <Connect player={false} connect={sendConnect} />
