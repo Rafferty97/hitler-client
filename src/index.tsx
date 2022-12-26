@@ -91,6 +91,15 @@ export function App() {
             executions.
           </li>
         </ul>
+        <h2>Who made this?</h2>
+        <p>
+          This digital adaptation of Secret Hitler was made by{" "}
+          <a href="https://alexanderrafferty.com/" target="_blank">
+            Alexander Rafferty
+          </a>
+          , but the original creators of the game are Max, Mike, Tommy and
+          Mackenzie. There is a full attribution in the footer.
+        </p>
       </div>
       <div className="licence">
         <p>
