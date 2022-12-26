@@ -13,7 +13,7 @@ body {
 
 body:before {
     content: "";
-    position: absolute;
+    position: fixed;
     top: 15%;
     bottom: 15%;
     left: 15%;
@@ -142,7 +142,7 @@ body:before {
     border: 1px solid black;
     padding: 8px 12px;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .form-row input:focus,
@@ -832,4 +832,67 @@ p.gameover-text {
     border-radius: 8px;
     margin: 30px 0;
     box-shadow: 0 2px 12px black;
+}
+
+.game-title {
+    color: orange;
+    font-family: 'Germania One', sans-serif;
+    letter-spacing: 0.1em;
+    text-align: center;
+    margin: 80px 0 40px;
+    font-size: 48px;
+}
+
+.game-buttons {
+    margin: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-buttons button {
+    background-color: white;
+    border: 1px solid white;
+    color: black;
+    padding: 9px 20px 8px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    font-size: 18px;
+    margin: 15px 20px;
+    width: 12em;
+    cursor: pointer;
+}
+
+.about {
+    width: 90%;
+    max-width: 800px;
+    margin: 40px auto;
+}
+
+.about h2 {
+    color: orange;
+    font-family: 'Germania One', sans-serif;
+    letter-spacing: 0.1em;
+    font-size: 24px;
+    line-height: 1;
+    margin: 2em 0 1em;
+}
+
+.about p, .about li {
+    font-size: 16px;
+    line-height: 1.4;
+    margin: 1em 0;
+}
+
+.about p a {
+    color: white;
+}
+
+@media (max-width: 800px) {
+    .game-title {
+        font-size: 32px;
+    }
+    .game-buttons {
+        flex-direction: column;
+    }
 }

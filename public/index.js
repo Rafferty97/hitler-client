@@ -29,7 +29,7 @@ var main = (function (exports, React, reactDom) {
         return __assign.apply(this, arguments);
     };
 
-    var WS_URL = "ws://localhost:8888/" ;
+    var WS_URL =  "wss://secrethitler.live/ws";
     var unconnectedMessageHandler = function () {
         throw new Error("Not connected to server.");
     };
@@ -2123,13 +2123,15 @@ var main = (function (exports, React, reactDom) {
                     window.history.pushState("", "", "?m=p&g=" + msg.gameId + "&p=" + msg.playerId);
                     break;
                 case "update":
-                    setState(msg.state);
-                    setError(null);
-                    break;
-                case "gameover":
-                    setState(null);
-                    setJoinGameMsg(null);
-                    window.history.pushState("", "", "?m=p");
+                    if (msg.state.type === "gameover") {
+                        setState(null);
+                        setJoinGameMsg(null);
+                        window.history.pushState("", "", "?m=p");
+                    }
+                    else {
+                        setState(msg.state);
+                        setError(null);
+                    }
                     break;
                 case "error":
                     if (msg.error.match(/game does not exist/i)) {
@@ -5035,13 +5037,15 @@ var main = (function (exports, React, reactDom) {
                     window.history.pushState("", "", "?m=b&g=" + msg.gameId);
                     break;
                 case "update":
-                    setState(msg.state);
-                    setError(null);
-                    break;
-                case "gameover":
-                    setState(null);
-                    setJoinGameMsg(null);
-                    window.history.pushState("", "", "?m=p");
+                    if (msg.state.type === "gameover") {
+                        setState(null);
+                        setJoinGameMsg(null);
+                        window.history.pushState("", "", "?m=b");
+                    }
+                    else {
+                        setState(msg.state);
+                        setError(null);
+                    }
                     break;
                 case "error":
                     if (msg.error.match(/game does not exist/i)) {
@@ -5079,11 +5083,11 @@ var main = (function (exports, React, reactDom) {
         React.useEffect(function () {
             var interval = setInterval(function () {
                 send({ type: "heartbeat" });
-            }, 5000);
+            }, 10000);
             return function () { return clearInterval(interval); };
         }, []);
         var controls;
-        if (!state) {
+        if (!state || !state.state) {
             controls = (React.createElement("div", { className: "controls" },
                 React.createElement(Connect, { player: false, connect: sendConnect }),
                 React.createElement("p", null, "\u2014 OR \u2014"),
@@ -5109,43 +5113,62 @@ var main = (function (exports, React, reactDom) {
 
     function App() {
         var _a = React.useState((function () {
-            var state = getQueryVariable('m');
-            if (state == 'p')
-                return 'player';
-            if (state == 'b')
-                return 'board';
-            return '';
+            var state = getQueryVariable("m");
+            if (state == "p")
+                return "player";
+            if (state == "b")
+                return "board";
+            return "";
         })()), state = _a[0], setState = _a[1];
-        if (state == 'player') {
+        if (state == "player") {
             return React.createElement(PlayerApp, null);
         }
-        if (state == 'board') {
+        if (state == "board") {
             return React.createElement(BoardApp, null);
         }
         var setMode = function (mode) {
             setState(mode);
-            window.history.pushState('', '', '?m=' + mode.substr(0, 1));
+            window.history.pushState("", "", "?m=" + mode.substr(0, 1));
         };
-        return React.createElement(React.Fragment, null,
-            React.createElement("div", { className: "controls vcentre" },
-                React.createElement("div", { className: "form-row" },
-                    React.createElement("button", { onClick: function () { return setMode('player'); } }, "New Player")),
-                React.createElement("div", { className: "form-row" },
-                    React.createElement("p", { style: { margin: 0 } }, "\u2014 OR \u2014")),
-                React.createElement("div", { className: "form-row" },
-                    React.createElement("button", { onClick: function () { return setMode('board'); } }, "Board Screen"))),
+        return (React.createElement(React.Fragment, null,
+            React.createElement("h1", { className: "game-title" }, "SecretHitler.live"),
+            React.createElement("div", { className: "game-buttons" },
+                React.createElement("button", { onClick: function () { return setMode("board"); } }, "Board Screen"),
+                React.createElement("button", { onClick: function () { return setMode("player"); } }, "Player")),
+            React.createElement("div", { className: "about" },
+                React.createElement("h2", null, "What is this?"),
+                React.createElement("p", null, "This is an online version of the popular board game \"Secret Hitler\", in which the game board is shown on a laptop/TV screen (or screens) and each player interacts with the game using their own device such as a smart phone or tablet."),
+                React.createElement("h2", null, "Quick start"),
+                React.createElement("ul", null,
+                    React.createElement("li", null, "On a shared screen such as a TV or laptop, click \"BOARD SCREEN\", then \"CREATE NEW GAME\""),
+                    React.createElement("li", null, "Each player, on their own device, clicks \"PLAYER\" then enters the room code and their name. Alternatively they can scan the QR code on the board screen."),
+                    React.createElement("li", null, "Once all players have joined, simply click \"START GAME\".")),
+                React.createElement("h2", null, "Game Rules"),
+                React.createElement("p", null,
+                    "The game has the exact same rules as the original board game which can be found at its",
+                    " ",
+                    React.createElement("a", { href: "https://secrethitler.com", target: "_blank" }, "official website"),
+                    "."),
+                React.createElement("p", null, "Players are prompted to perform certain actions on their devices and all game logic is performed on the server, so gameplay should be straightforward and easy."),
+                React.createElement("h2", null, "Important notes"),
+                React.createElement("ul", null,
+                    React.createElement("li", null, "After each card is revealed, whether Liberal or Fascist, the game will wait until all players have clicked the \"NEXT\" button. This is to allow players to interrogate each other following a legislative session."),
+                    React.createElement("li", null, "When the president and chancellor are selecting policy cards, the UI requires the player to select the card they wish to discard. This is important to remember when playing as the chancellor, who only has two cards. The UI gives the player the chance to confirm their selection before comitting."),
+                    React.createElement("li", null, "Be sure to pay attention to the players list on the right. It reveals who voted \"JA!\" and \"NEIN!\" in elections, as well as which players have been confirmed not to be Hitler after elections and executions."))),
             React.createElement("div", { className: "licence" },
                 React.createElement("p", null, "Secret Hitler is designed by Max Temkin, Mike Boxleiter, Tommy Maranges and illustrated by Mackenzie Schubert."),
                 React.createElement("p", null,
-                    "This game is attributed as per the ",
+                    "This game is attributed as per the",
+                    " ",
                     React.createElement("a", { target: "_blank", href: "https://creativecommons.org/licenses/by-nc-sa/4.0/" }, "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license"),
                     "."),
                 React.createElement("p", null,
-                    "The original game can be found at ",
+                    "The original game can be found at",
+                    " ",
                     React.createElement("a", { target: "_blank", href: "https://www.secrethitler.com/" }, "secrethitler.com"),
-                    ".")));
+                    "."))));
     }
-    reactDom.render(React.createElement(App, null), document.querySelector('#app'));
+    reactDom.render(React.createElement(App, null), document.querySelector("#app"));
 
     exports.App = App;
 
