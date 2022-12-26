@@ -38,11 +38,11 @@ export function BoardApp() {
         case "update":
           setState(msg.state)
           setError(null)
-          if (msg.state?.state?.type == "end" && msg.state?.state?.ended) {
-            setState(null)
-            setJoinGameMsg(null)
-            window.history.pushState("", "", `?m=b`)
-          }
+          break
+        case "gameover":
+          setState(null)
+          setJoinGameMsg(null)
+          window.history.pushState("", "", `?m=p`)
           break
         case "error":
           if (msg.error.match(/game does not exist/i)) {
@@ -82,6 +82,13 @@ export function BoardApp() {
       return () => clearTimeout(timeout)
     }
   }, [state?.state?.type])
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      send({ type: "heartbeat" })
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   let controls
   if (!state) {

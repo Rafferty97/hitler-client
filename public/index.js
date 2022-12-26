@@ -29,7 +29,7 @@ var main = (function (exports, React, reactDom) {
         return __assign.apply(this, arguments);
     };
 
-    var WS_URL =  "wss://secrethitler.live/ws";
+    var WS_URL = "ws://localhost:8888/" ;
     var unconnectedMessageHandler = function () {
         throw new Error("Not connected to server.");
     };
@@ -2112,7 +2112,6 @@ var main = (function (exports, React, reactDom) {
             leave: { transform: "translate(0px, 30px)", opacity: 0 },
         });
         var _f = useWebSocket(function (msg) {
-            var _a, _b;
             switch (msg.type) {
                 case "game_joined":
                     var joinMsg = {
@@ -2126,11 +2125,11 @@ var main = (function (exports, React, reactDom) {
                 case "update":
                     setState(msg.state);
                     setError(null);
-                    if (((_b = (_a = msg.state) === null || _a === void 0 ? void 0 : _a.action) === null || _b === void 0 ? void 0 : _b.type) == "gameover" && msg.state.action.ended) {
-                        setState(null);
-                        setJoinGameMsg(null);
-                        window.history.pushState("", "", "?m=p");
-                    }
+                    break;
+                case "gameover":
+                    setState(null);
+                    setJoinGameMsg(null);
+                    window.history.pushState("", "", "?m=p");
                     break;
                 case "error":
                     if (msg.error.match(/game does not exist/i)) {
@@ -2168,8 +2167,8 @@ var main = (function (exports, React, reactDom) {
         };
         React.useEffect(function () {
             var interval = setInterval(function () {
-                send({ type: "get_state" });
-            }, 5000);
+                send({ type: "heartbeat" });
+            }, 10000);
             return function () { return clearInterval(interval); };
         }, []);
         var controls, controlsClass = "";
@@ -5020,7 +5019,6 @@ var main = (function (exports, React, reactDom) {
         var _c = React.useState(null), state = _c[0], setState = _c[1];
         var _d = React.useState(null), error = _d[0], setError = _d[1];
         var _e = useWebSocket(function (msg) {
-            var _a, _b, _c, _d;
             switch (msg.type) {
                 case "game_created":
                     send({
@@ -5039,11 +5037,11 @@ var main = (function (exports, React, reactDom) {
                 case "update":
                     setState(msg.state);
                     setError(null);
-                    if (((_b = (_a = msg.state) === null || _a === void 0 ? void 0 : _a.state) === null || _b === void 0 ? void 0 : _b.type) == "end" && ((_d = (_c = msg.state) === null || _c === void 0 ? void 0 : _c.state) === null || _d === void 0 ? void 0 : _d.ended)) {
-                        setState(null);
-                        setJoinGameMsg(null);
-                        window.history.pushState("", "", "?m=b");
-                    }
+                    break;
+                case "gameover":
+                    setState(null);
+                    setJoinGameMsg(null);
+                    window.history.pushState("", "", "?m=p");
                     break;
                 case "error":
                     if (msg.error.match(/game does not exist/i)) {
@@ -5078,6 +5076,12 @@ var main = (function (exports, React, reactDom) {
                 return function () { return clearTimeout(timeout_1); };
             }
         }, [(_a = state === null || state === void 0 ? void 0 : state.state) === null || _a === void 0 ? void 0 : _a.type]);
+        React.useEffect(function () {
+            var interval = setInterval(function () {
+                send({ type: "heartbeat" });
+            }, 5000);
+            return function () { return clearInterval(interval); };
+        }, []);
         var controls;
         if (!state) {
             controls = (React.createElement("div", { className: "controls" },
